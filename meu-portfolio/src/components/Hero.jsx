@@ -42,6 +42,7 @@ export default function Hero() {
 
   return (
     <section id="inicio" className="min-h-screen flex flex-col justify-center bg-background text-gray-300 p-8 font-mono relative overflow-hidden">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none"></div>
 
       <div className="max-w-4xl mx-auto w-full z-10 mt-10">
         <p className="text-terminal-green mb-4 text-sm md:text-base h-6">
