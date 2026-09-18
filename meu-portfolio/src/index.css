@@ -6,3 +6,24 @@ body {
   background-color: #0D1117;
   color: #c9d1d9;
 }
+
+/* Customização da barra de rolagem (Estilo dark) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1117; 
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2ea043; 
+}
+
+/* Seleção de texto no estilo terminal */
+::selection {
+  background: rgba(46, 160, 67, 0.3); /* terminal-green com transparência */
+  color: #ffffff;
+}
