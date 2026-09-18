@@ -27,7 +27,7 @@ export default function Contact() {
         </div>
 
         <div className="text-xs text-gray-600 border-t border-gray-800 pt-6 mt-6">
-          <p>/* {new Date().getFullYear()} Riquelmy Miyasawa Borges. A partir de Paracatu, MG. */</p>
+          <p>/* {new Date().getFullYear()} Riquelmy Miyasawa Borges. Brazil - MG. */</p>
           <p className="mt-2 animate-pulse">EOF</p>
         </div>
       </div>
