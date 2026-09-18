@@ -6,6 +6,7 @@ import Projects from './components/Projects';
 import Skills from './components/Skills';
 import Contact from './components/Contact';
 import BootScreen from './components/BootScreen';
+import CommandPalette from './components/CommandPalette'; // Importe aqui
 
 function App() {
   const [booting, setBooting] = useState(true);
@@ -15,7 +16,8 @@ function App() {
       {booting ? (
         <BootScreen onComplete={() => setBooting(false)} />
       ) : (
-        <main className="min-h-screen bg-background selection:bg-terminal-green/30 selection:text-white animate-fade-in">
+        <main className="min-h-screen bg-background selection:bg-terminal-green/30 selection:text-white">
+          <CommandPalette />
           <Navbar />
           <Hero />
           <About />
