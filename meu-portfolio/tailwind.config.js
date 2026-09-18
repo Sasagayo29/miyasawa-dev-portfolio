@@ -20,6 +20,15 @@ export default {
           neon: '#238636',
           yellow: '#d29922', // Amarelo Kinross/Radix
         }
+      },
+      animation: {
+        'scanline': 'scanline 2s linear infinite',
+      },
+      keyframes: {
+        scanline: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(100%)' },
+        }
       }
     },
   },
