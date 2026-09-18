@@ -48,7 +48,7 @@ export default function About() {
   ];
 
   return (
-    <section id="sobre" className="py-20 bg-background text-gray-300 font-mono border-t border-gray-800">
+    <section id="sobre" className="py-20 bg-transparent text-gray-300 font-mono border-t border-gray-800">
       <div className="max-w-4xl mx-auto px-6">
         <motion.h2 
           initial={{ opacity: 0, x: -20 }}

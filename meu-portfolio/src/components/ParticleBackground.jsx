@@ -88,16 +88,17 @@ export default function ParticleBackground() {
     }
 
     // Inicializar o array de partículas
+    // Substitua o init e animate antigos por estes:
     const init = () => {
       particlesArray = [];
-      const numberOfParticles = (canvas.width * canvas.height) / 12000; // Densidade
+      const numberOfParticles = (canvas.width * canvas.height) / 12000;
       for (let i = 0; i < numberOfParticles; i++) {
         const size = (Math.random() * 2) + 1;
-        const x = Math.random() * (innerWidth - size * 2) + size * 2;
-        const y = Math.random() * (innerHeight - size * 2) + size * 2;
+        const x = Math.random() * (canvas.width - size * 2) + size * 2;
+        const y = Math.random() * (canvas.height - size * 2) + size * 2;
         const directionX = (Math.random() * 2) - 1;
         const directionY = (Math.random() * 2) - 1;
-        const color = 'rgba(46, 160, 67, 0.5)'; // Terminal Green
+        const color = 'rgba(46, 160, 67, 0.5)';
 
         particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
       }
@@ -127,7 +128,7 @@ export default function ParticleBackground() {
     // Loop de animação
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < particlesArray.length; i++) {
         particlesArray[i].update();

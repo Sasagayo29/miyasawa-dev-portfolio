@@ -63,7 +63,7 @@ export default function Projects() {
   const [selectedProject, setSelectedProject] = useState(null);
 
   return (
-    <section id="projetos" className="py-20 bg-background text-gray-300 font-mono border-t border-gray-800 relative">
+    <section id="projetos" className="py-20 bg-transparent text-gray-300 font-mono border-t border-gray-800 relative">
       <div className="max-w-6xl mx-auto px-6">
         
         <div className="mb-16">
