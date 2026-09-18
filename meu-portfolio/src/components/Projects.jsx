@@ -1,26 +1,35 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { projects } from '../data/projects';
+import ProjectModal from './ProjectModal';
 
 export default function Projects() {
   const [activeCategory, setActiveCategory] = useState(projects.categories[0].name);
+  const [selectedProject, setSelectedProject] = useState(null);
 
   return (
-    <section className="py-20 bg-background text-gray-300 font-mono border-t border-gray-800">
+    <section className="py-20 bg-background text-gray-300 font-mono border-t border-gray-800 relative">
       <div className="max-w-6xl mx-auto px-6">
         
-        {/* Seção Destaques Corporativos */}
         <div className="mb-16">
-          <h2 className="text-2xl md:text-3xl text-white font-bold mb-8 flex items-center gap-3">
+          <motion.h2 
+            initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+            className="text-2xl md:text-3xl text-white font-bold mb-8 flex items-center gap-3"
+          >
             <span className="text-terminal-green">{">"}</span> 
             <span>ls ./projetos/destaques</span>
-            <span className="animate-pulse w-3 h-6 bg-terminal-green inline-block"></span>
-          </h2>
+          </motion.h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {projects.featured.map((project) => (
-              <div 
+            {projects.featured.map((project, idx) => (
+              <motion.div 
                 key={project.id} 
-                className="bg-surface border border-gray-800 rounded-lg p-6 hover:border-terminal-green/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.1)] transition-all duration-300 group"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                onClick={() => setSelectedProject(project)}
+                className="bg-surface border border-gray-800 rounded-lg p-6 hover:border-terminal-green/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.1)] transition-all duration-300 group cursor-pointer flex flex-col"
               >
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-xl font-bold text-white group-hover:text-terminal-green transition-colors">
@@ -40,19 +49,20 @@ export default function Projects() {
                     </span>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
 
-        {/* Seção Categorias / Outros Projetos */}
         <div>
-          <h2 className="text-2xl md:text-3xl text-white font-bold mb-8 flex items-center gap-3">
+          <motion.h2 
+            initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+            className="text-2xl md:text-3xl text-white font-bold mb-8 flex items-center gap-3"
+          >
             <span className="text-terminal-green">{">"}</span> 
             <span>cat repos.json</span>
-          </h2>
+          </motion.h2>
 
-          {/* Abas de Navegação */}
           <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-800 pb-4">
             {projects.categories.map((cat) => (
               <button
@@ -69,14 +79,22 @@ export default function Projects() {
             ))}
           </div>
 
-          {/* Grid da Categoria Ativa */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <motion.div 
+            key={activeCategory}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
             {projects.categories
               .find((c) => c.name === activeCategory)
               ?.items.map((item, index) => (
-                <div key={index} className="bg-[#0f141b] border border-gray-800 rounded p-5 hover:border-gray-600 transition-colors">
+                <div 
+                  key={index} 
+                  onClick={() => setSelectedProject(item)}
+                  className="bg-[#0f141b] border border-gray-800 rounded p-5 hover:border-gray-600 transition-colors cursor-pointer"
+                >
                   <h4 className="text-white font-bold mb-2">{item.title}</h4>
-                  <p className="text-gray-500 text-xs font-sans mb-4 min-h-[40px]">
+                  <p className="text-gray-500 text-xs font-sans mb-4 min-h-[40px] line-clamp-2">
                     {item.desc}
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -88,10 +106,15 @@ export default function Projects() {
                   </div>
                 </div>
               ))}
-          </div>
+          </motion.div>
         </div>
-
       </div>
+
+      <ProjectModal 
+        project={selectedProject} 
+        isOpen={!!selectedProject} 
+        onClose={() => setSelectedProject(null)} 
+      />
     </section>
   );
 }
