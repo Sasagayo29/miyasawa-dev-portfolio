@@ -3,12 +3,66 @@ import { motion } from 'framer-motion';
 import { projects } from '../data/projects';
 import ProjectModal from './ProjectModal';
 
+// Sub-componente para gerir o brilho individual de cada cartão
+const GlowCard = ({ project, onClick, index }) => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1 }}
+      onMouseMove={handleMouseMove}
+      onClick={() => onClick(project)}
+      className="relative bg-surface border border-gray-800 rounded-lg p-6 transition-all duration-300 group cursor-pointer flex flex-col overflow-hidden"
+    >
+      {/* Camada do Brilho (Glow) */}
+      <div 
+        className="pointer-events-none absolute -inset-px rounded-lg opacity-0 transition duration-300 group-hover:opacity-100 z-0"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(46, 160, 67, 0.15), transparent 40%)`
+        }}
+      />
+      
+      {/* Conteúdo do Cartão (z-10 para ficar acima do brilho) */}
+      <div className="relative z-10 flex-1 flex flex-col">
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-xl font-bold text-white group-hover:text-terminal-green transition-colors">
+            {project.title}
+          </h3>
+          <span className="text-xs text-terminal-yellow bg-terminal-yellow/10 px-2 py-1 rounded">
+            {project.category}
+          </span>
+        </div>
+        <p className="text-gray-400 mb-6 text-sm font-sans leading-relaxed">
+          {project.description}
+        </p>
+        <div className="flex flex-wrap gap-2 mt-auto">
+          {project.techStack?.map((tech, idx) => (
+            <span key={idx} className="text-xs text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded border border-cyan-400/20">
+              {tech}
+            </span>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 export default function Projects() {
   const [activeCategory, setActiveCategory] = useState(projects.categories[0].name);
   const [selectedProject, setSelectedProject] = useState(null);
 
   return (
-    // Altere a tag <section> para ter o id="projetos"
     <section id="projetos" className="py-20 bg-background text-gray-300 font-mono border-t border-gray-800 relative">
       <div className="max-w-6xl mx-auto px-6">
         
@@ -23,34 +77,7 @@ export default function Projects() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {projects.featured.map((project, idx) => (
-              <motion.div 
-                key={project.id} 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                onClick={() => setSelectedProject(project)}
-                className="bg-surface border border-gray-800 rounded-lg p-6 hover:border-terminal-green/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.1)] transition-all duration-300 group cursor-pointer flex flex-col"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold text-white group-hover:text-terminal-green transition-colors">
-                    {project.title}
-                  </h3>
-                  <span className="text-xs text-terminal-yellow bg-terminal-yellow/10 px-2 py-1 rounded">
-                    {project.category}
-                  </span>
-                </div>
-                <p className="text-gray-400 mb-6 text-sm font-sans leading-relaxed">
-                  {project.description}
-                </p>
-                <div className="flex flex-wrap gap-2 mt-auto">
-                  {project.techStack.map((tech, index) => (
-                    <span key={index} className="text-xs text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded border border-cyan-400/20">
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
+              <GlowCard key={project.id} project={project} index={idx} onClick={setSelectedProject} />
             ))}
           </div>
         </div>
@@ -92,9 +119,9 @@ export default function Projects() {
                 <div 
                   key={index} 
                   onClick={() => setSelectedProject(item)}
-                  className="bg-[#0f141b] border border-gray-800 rounded p-5 hover:border-gray-600 transition-colors cursor-pointer"
+                  className="bg-[#0f141b] border border-gray-800 rounded p-5 hover:border-gray-600 transition-colors cursor-pointer group"
                 >
-                  <h4 className="text-white font-bold mb-2">{item.title}</h4>
+                  <h4 className="text-white font-bold mb-2 group-hover:text-terminal-green transition-colors">{item.title}</h4>
                   <p className="text-gray-500 text-xs font-sans mb-4 min-h-[40px] line-clamp-2">
                     {item.desc}
                   </p>
