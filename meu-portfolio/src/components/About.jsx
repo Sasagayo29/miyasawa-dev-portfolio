@@ -21,7 +21,8 @@ export default function About() {
   };
 
   return (
-    <section className="py-20 bg-background text-gray-300 font-mono border-t border-gray-800">
+    // Altere a tag <section> para ter o id="sobre"
+    <section id="sobre" className="py-20 bg-background text-gray-300 font-mono border-t border-gray-800">
       <div className="max-w-4xl mx-auto px-6">
         <motion.h2 
           initial={{ opacity: 0, x: -20 }}

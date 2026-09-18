@@ -21,7 +21,8 @@ export default function Skills() {
   ];
 
   return (
-    <section className="py-20 bg-[#0a0d12] text-gray-300 font-mono border-t border-gray-800">
+    // Altere a tag <section> para ter o id="skills"
+    <section id="skills" className="py-20 bg-[#0a0d12] text-gray-300 font-mono border-t border-gray-800">
       <div className="max-w-6xl mx-auto px-6">
         
         <h2 className="text-2xl md:text-3xl text-white font-bold mb-10 flex items-center gap-3">
