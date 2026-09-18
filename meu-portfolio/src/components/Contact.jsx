@@ -14,13 +14,13 @@ export default function Contact() {
         </p>
 
         <div className="flex flex-wrap justify-center gap-4 mb-10">
-          <a href="mailto:riquelmemiyasawaborges@gmail.com" className="px-5 py-2 border border-gray-700 rounded hover:text-terminal-green hover:border-terminal-green transition-colors">
+          <a href="mailto:riquelmymiyasawaborges@gmail.com" className="px-5 py-2 border border-gray-700 rounded hover:text-terminal-green hover:border-terminal-green transition-colors">
             Email
           </a>
-          <a href="https://linkedin.com/in/riquelmymiyasawaborges" target="_blank" rel="noreferrer" className="px-5 py-2 border border-gray-700 rounded hover:text-terminal-green hover:border-terminal-green transition-colors">
+          <a href="https://www.linkedin.com/in/riquelmy-miyasawa-borges/" target="_blank" rel="noreferrer" className="px-5 py-2 border border-gray-700 rounded hover:text-terminal-green hover:border-terminal-green transition-colors">
             LinkedIn
           </a>
-          <a href="https://github.com/riquelmymiyasawa" target="_blank" rel="noreferrer" className="px-5 py-2 border border-gray-700 rounded hover:text-terminal-green hover:border-terminal-green transition-colors">
+          <a href="https://github.com/Sasagayo29" target="_blank" rel="noreferrer" className="px-5 py-2 border border-gray-700 rounded hover:text-terminal-green hover:border-terminal-green transition-colors">
             GitHub
           </a>
         </div>
