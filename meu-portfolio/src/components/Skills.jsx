@@ -37,16 +37,24 @@ export default function Skills() {
     }
   ];
 
-  // Gerador de "Commits" falsos para o mini-gráfico de fundo
+  // Gerador de "Commits" com as cores oficiais do GitHub Dark Mode
   const generateMockCommits = () => {
     return Array.from({ length: 112 }).map((_, i) => {
       const intensity = Math.random();
-      let colorClass = "bg-gray-800/30";
-      if (intensity > 0.8) colorClass = "bg-terminal-green/80 shadow-[0_0_5px_rgba(46,160,67,0.5)]";
-      else if (intensity > 0.6) colorClass = "bg-terminal-green/60";
-      else if (intensity > 0.4) colorClass = "bg-terminal-green/30";
+      // Cor base para dias sem commits (com borda subtil para dar textura)
+      let colorClass = "bg-[#161b22] border border-white/5"; 
       
-      return <div key={i} className={`w-3 h-3 rounded-sm ${colorClass} transition-colors duration-1000 hover:bg-terminal-green cursor-crosshair`}></div>;
+      if (intensity > 0.85) colorClass = "bg-[#39d353] shadow-[0_0_8px_rgba(57,211,83,0.5)]"; // Verde muito forte
+      else if (intensity > 0.65) colorClass = "bg-[#26a641]"; // Verde forte
+      else if (intensity > 0.45) colorClass = "bg-[#006d32]"; // Verde médio
+      else if (intensity > 0.25) colorClass = "bg-[#0e4429]"; // Verde escuro
+      
+      return (
+        <div 
+          key={i} 
+          className={`w-3.5 h-3.5 rounded-sm ${colorClass} transition-colors duration-500`}
+        ></div>
+      );
     });
   };
 
@@ -67,9 +75,12 @@ export default function Skills() {
     <section id="skills" className="py-20 bg-[#0a0d12]/60 text-gray-300 font-mono border-t border-gray-800 relative overflow-hidden">
       
       {/* Gráfico de Contribuição Decorativo (Estilo GitHub) */}
-      <div className="absolute right-10 bottom-10 opacity-20 pointer-events-none hidden lg:flex flex-col gap-1">
-        <div className="text-[10px] text-gray-500 mb-1 flex items-center gap-2"><TerminalSquare size={12}/> System Activity</div>
-        <div className="grid grid-cols-[repeat(16,minmax(0,1fr))] gap-1">
+      <div className="absolute right-10 bottom-10 opacity-70 pointer-events-none hidden lg:flex flex-col gap-1 z-0">
+        <div className="text-xs text-gray-400 mb-1 flex items-center gap-2">
+          <TerminalSquare size={14} className="text-terminal-green"/> 
+          System Activity_
+        </div>
+        <div className="grid grid-cols-[repeat(16,minmax(0,1fr))] gap-1.5 p-3 bg-surface/50 rounded-lg border border-gray-800/50 backdrop-blur-sm">
           {generateMockCommits()}
         </div>
       </div>
