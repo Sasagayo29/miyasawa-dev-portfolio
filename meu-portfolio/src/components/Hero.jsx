@@ -42,7 +42,6 @@ export default function Hero() {
 
   return (
     <section id="inicio" className="min-h-screen flex flex-col justify-center bg-background text-gray-300 p-8 font-mono relative overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none"></div>
 
       <div className="max-w-4xl mx-auto w-full z-10 mt-10">
         <p className="text-terminal-green mb-4 text-sm md:text-base h-6">
@@ -50,7 +49,7 @@ export default function Hero() {
         </p>
         
         <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight min-h-[140px] md:min-h-[180px]">
-          <TypewriterText text="Engenheiro de Software &" delay={1200} speed={40} />
+          <TypewriterText text="Software Engineer &" delay={1200} speed={40} />
           <br /> 
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-terminal-neon to-cyan-500">
             <TypewriterText text="Data Analyst Industrial." delay={2200} speed={50} showCursor={true} />
