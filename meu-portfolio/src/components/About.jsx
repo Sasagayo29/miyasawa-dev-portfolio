@@ -27,17 +27,18 @@ export default function About() {
       date: "Out 2025 - Presente",
       desc: "Desenvolvimento de soluções enterprise, automação RPA, PWA offline-first e arquitetura de dados industriais."
     },
-    {
-      role: "Estágio em Automação e Monitoramento",
-      company: "Kinross Gold Corporation Brasil",
-      date: "Jul 2024 - Out 2025",
-      desc: "Integração operacional, telemetria de frotas e monitoramento de barragens."
-    },
+    
     {
       role: "Suporte Técnico N1/N2",
       company: "Softcom",
       date: "Mar 2025 - Ago 2025",
       desc: "Atendimento de infraestrutura, resolução de incidentes e estabilização de redes locais."
+    },
+    {
+      role: "Estágio em Automação e Monitoramento",
+      company: "Kinross Gold Corporation Brasil",
+      date: "Jul 2024 - Out 2025",
+      desc: "Integração operacional, telemetria de frotas e monitoramento de barragens."
     },
     {
       role: "Graduação: Análise e Desenv. de Sistemas",
