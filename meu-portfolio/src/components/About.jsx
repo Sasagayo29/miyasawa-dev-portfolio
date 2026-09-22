@@ -5,15 +5,15 @@ export default function About() {
   const [output, setOutput] = useState([]);
 
   const handleCommand = (cmd) => {
-    if (cmd === 'hobbies') {
+    if (cmd === 'focus') {
       setOutput([...output, { 
-        command: '> cat hobbies.txt', 
-        result: 'Carregando dependências pessoais...\n- Motociclismo: Yamaha MT-03 2024 preta a postos.\n- Gaming: Sessões na PlayStation (Elden Ring, Sekiro, Resident Evil 4, Minecraft).'
+        command: '> cat tech_radar.md', 
+        result: 'Carregando stack de inovação atual...\n- Arquitetura: PWA e modelos Offline-First para zonas de sombra.\n- Automação: RPA avançado (Playwright/Selenium) integrado a ERPs.\n- Dados & IA: Pipelines ETL e redes neurais para visão computacional.'
       }]);
-    } else if (cmd === 'ping') {
+    } else if (cmd === 'status') {
       setOutput([...output, { 
-        command: '> ping hiancka', 
-        result: 'Enviando pacotes ICMP...\nResposta: bytes=32 tempo<1ms TTL=128\nConexão estável e sem latência desde 29/07/2021 às 10:00.'
+        command: '> systemctl status core-services', 
+        result: 'Verificando integridade dos serviços de missão crítica...\n[OK] MAPRIX Enterprise: Ativo e responsivo.\n[OK] MoviMeX: Sincronização em background operacional.\n[OK] KAD Console: Conexão WinRM e AD estabelecida.\nUptime: 99.99% - Operação industrial sem interrupções.'
       }]);
     } else if (cmd === 'clear') {
       setOutput([]);
@@ -27,7 +27,6 @@ export default function About() {
       date: "Out 2025 - Presente",
       desc: "Desenvolvimento de soluções enterprise, automação RPA, PWA offline-first e arquitetura de dados industriais."
     },
-    
     {
       role: "Suporte Técnico N1/N2",
       company: "Softcom",
@@ -49,7 +48,7 @@ export default function About() {
   ];
 
   return (
-    <section id="sobre" className="py-20 bg-transparent text-gray-300 font-mono border-t border-gray-800">
+    <section id="sobre" className="py-20 bg-transparent text-gray-300 font-mono border-t border-gray-800 relative z-10">
       <div className="max-w-4xl mx-auto px-6">
         <motion.h2 
           initial={{ opacity: 0, x: -20 }}
@@ -102,15 +101,15 @@ export default function About() {
                 <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
               </div>
               <div className="flex gap-2 ml-4">
-                <button onClick={() => handleCommand('hobbies')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">cat hobbies.txt</button>
-                <button onClick={() => handleCommand('ping')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">ping hiancka</button>
+                <button onClick={() => handleCommand('focus')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">cat tech_radar.md</button>
+                <button onClick={() => handleCommand('status')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">systemctl status</button>
                 <button onClick={() => handleCommand('clear')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">clear</button>
               </div>
             </div>
             
             <div className="p-4 md:p-6 font-mono text-sm leading-relaxed min-h-[250px] max-h-[400px] overflow-y-auto">
               <p className="text-gray-400 mb-4">
-                Ambiente de desenvolvimento ativo. Execute os scripts acima para extrair dados pessoais protegidos.
+                Ambiente de desenvolvimento ativo. Execute os diagnósticos acima para verificar o status dos nós operacionais.
               </p>
 
               {output.map((out, idx) => (
