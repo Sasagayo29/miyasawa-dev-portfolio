@@ -5,28 +5,28 @@ export const projects = {
       title: "MAPRIX Enterprise",
       description: "Hub de monitoramento de frota com geofencing, checklists digitais com evidência fotográfica, dashboards de BI e aplicativo mobile com operação offline.",
       techStack: ["Python", "Flask", "PostgreSQL", "PWA"],
-      category: "Destaque"
-    },
-    {
-      id: "mineflow",
-      title: "MineFlow",
-      description: "Sistema enterprise para chão de mina com funcionamento offline-first, IA integrada e gestão de ativos via QR Code em áreas sem conectividade.",
-      techStack: ["React", "Offline-first", "IA", "Mobile"],
-      category: "Destaque"
-    },
-    {
-      id: "kad",
-      title: "KAD (Kinross AD Asset & Identity Console)",
-      description: "Console unificado (Desktop e Mobile) para gestão de identidades e ativos de TI, com integração direta ao ERP Senior/Vetorh e Active Directory.",
-      techStack: ["PySide6", "React", "FastAPI", "WinRM"],
-      category: "Destaque"
+      category: "Destaque corporativo"
     },
     {
       id: "movimex",
-      title: "MoviMeX",
-      description: "PWA offline-first baseado em IndexedDB para rastreamento de ativos, com leitura nativa de código de barras e impressão em campo via Bluetooth.",
-      techStack: ["React", "IndexedDB", "Bluetooth", "PWA"],
-      category: "Destaque"
+      title: "MoviMeX & Zebra DataWedge",
+      description: "PWA offline-first para gestão de armazéns. Conta com integração nativa de hardware via Zebra DataWedge para escaneamento a laser de alta velocidade e impressão térmica Bluetooth.",
+      techStack: ["React", "FastAPI", "DataWedge", "IndexedDB"],
+      category: "Logística / Mobile"
+    },
+    {
+      id: "safeshift",
+      title: "SafeShift AI Monitor",
+      description: "Sistema de visão computacional e redes neurais para detecção de fadiga e distração de motoristas industriais em tempo real, utilizando análise de landmarks faciais.",
+      techStack: ["Python", "Redes Neurais", "OpenCV", "dlib"],
+      category: "Inteligência Artificial"
+    },
+    {
+      id: "kad",
+      title: "KAD (Kinross AD Console)",
+      description: "Console unificado (Desktop e Mobile) para gestão de identidades e ativos de TI, com integração direta ao ERP Senior/Vetorh e Active Directory via WinRM.",
+      techStack: ["PySide6", "React", "FastAPI", "WinRM"],
+      category: "Segurança / Infra"
     }
   ],
   categories: [
