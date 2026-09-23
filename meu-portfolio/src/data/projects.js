@@ -8,6 +8,13 @@ export const projects = {
       category: "Destaque corporativo"
     },
     {
+      id: "maprix-therm",
+      title: "Maprix Therm API",
+      description: "API de análise termográfica industrial prototipada no Google Colab. Processamento de dados térmicos e visão computacional para monitoramento preditivo de anomalias em equipamentos críticos.",
+      techStack: ["Python", "Google Colab", "OpenCV", "API"],
+      category: "Visão Computacional / Termografia"
+    },
+    {
       id: "movimex",
       title: "MoviMeX & Zebra DataWedge",
       description: "PWA offline-first para gestão de armazéns. Conta com integração nativa de hardware via Zebra DataWedge para escaneamento a laser de alta velocidade e impressão térmica Bluetooth.",
@@ -59,7 +66,6 @@ export const projects = {
     {
       name: "Visão Computacional & Outros",
       items: [
-        { title: "SafeShift Monitor", tech: ["Python", "OpenCV", "dlib"], desc: "Monitoramento de fadiga e distração de motoristas por visão computacional." },
         { title: "RPG Multiplayer", tech: ["Flask", "SocketIO", "JS"], desc: "Plataforma web educacional em tempo real." }
       ]
     }
