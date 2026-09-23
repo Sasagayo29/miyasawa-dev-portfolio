@@ -15,6 +15,11 @@ export default function About() {
         command: '> systemctl status core-services', 
         result: 'Verificando integridade dos serviços de missão crítica...\n[OK] MAPRIX Enterprise: Ativo e responsivo.\n[OK] MoviMeX: Sincronização em background operacional.\n[OK] KAD Console: Conexão WinRM e AD estabelecida.\nUptime: 99.99% - Operação industrial sem interrupções.'
       }]);
+    } else if (cmd === 'repos') {
+      setOutput([...output, { 
+        command: '> cat repos.json', 
+        result: `[\n  {\n    "name": "NEXUS",\n    "type": "Desktop App",\n    "stack": ["Python", "PySide6", "Pandas"],\n    "desc": "Relatórios de rateio e atualização massiva via Excel"\n  },\n  {\n    "name": "MineFlow",\n    "type": "Electron App",\n    "stack": ["JavaScript", "Mermaid.js", "SheetJS"],\n    "desc": "Criação de fluxos de trabalho via planilhas"\n  },\n  {\n    "name": "PySent",\n    "type": "Data Analytics",\n    "stack": ["JS", "Chart.js"],\n    "desc": "Análises estatísticas e visualização de dados"\n  }\n]`
+      }]);
     } else if (cmd === 'clear') {
       setOutput([]);
     }
@@ -71,7 +76,6 @@ export default function About() {
           >
             {timeline.map((item, idx) => (
               <div key={idx} className="relative pl-6 group">
-                {/* O ponto do "Commit" */}
                 <span className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-gray-800 border-2 border-background group-hover:bg-terminal-green group-hover:shadow-[0_0_10px_rgba(46,160,67,0.8)] transition-all duration-300"></span>
                 
                 <h4 className="text-white font-bold text-sm md:text-base group-hover:text-terminal-green transition-colors">
@@ -101,8 +105,9 @@ export default function About() {
                 <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
               </div>
               <div className="flex gap-2 ml-4">
-                <button onClick={() => handleCommand('focus')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">cat tech_radar.md</button>
-                <button onClick={() => handleCommand('status')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">systemctl status</button>
+                <button onClick={() => handleCommand('focus')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">cat tech_radar</button>
+                <button onClick={() => handleCommand('repos')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">cat repos.json</button>
+                <button onClick={() => handleCommand('status')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">status</button>
                 <button onClick={() => handleCommand('clear')} className="whitespace-nowrap text-[10px] md:text-xs px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 transition-colors">clear</button>
               </div>
             </div>
@@ -115,7 +120,8 @@ export default function About() {
               {output.map((out, idx) => (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={idx} className="mt-4 border-t border-gray-800 pt-4">
                   <div className="text-terminal-green mb-1">{out.command}</div>
-                  <div className="text-gray-300 whitespace-pre-line">{out.result}</div>
+                  {/* Trocamos whitespace-pre-line por whitespace-pre-wrap para preservar a indentação do JSON perfeitamente */}
+                  <div className="text-gray-300 whitespace-pre-wrap font-mono text-xs md:text-sm">{out.result}</div>
                 </motion.div>
               ))}
               <div className="animate-pulse w-2 h-4 bg-terminal-green inline-block mt-4"></div>
