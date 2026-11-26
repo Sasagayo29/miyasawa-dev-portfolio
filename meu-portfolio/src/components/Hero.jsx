@@ -37,7 +37,7 @@ const TypewriterText = ({ text, delay = 0, speed = 40, showCursor = false }) => 
   );
 };
 
-export default function Hero() {
+export default function Hero({ onOpenContact }) {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
@@ -120,8 +120,8 @@ export default function Hero() {
                 Métricas GitHub
               </button>
               <button
-                onClick={() => scrollTo('contato')}
-                className="px-6 py-3 text-gray-400 border border-gray-800 hover:border-gray-600 hover:text-white transition-colors rounded text-sm"
+                onClick={onOpenContact}
+                className="px-6 py-3 text-gray-300 border border-gray-700 hover:border-terminal-green/60 hover:text-terminal-green transition-colors rounded text-sm"
               >
                 Contato
               </button>
