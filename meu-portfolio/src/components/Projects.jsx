@@ -96,7 +96,7 @@ export default function Projects() {
 
   return (
     <section id="projetos" className="py-20 bg-transparent text-gray-300 font-mono border-t border-gray-800 relative">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Projetos Corporativos em Destaque */}
         <div className="mb-16">
           <motion.h2

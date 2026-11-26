@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Terminal, User, Briefcase, Mail, Code } from 'lucide-react';
+import { Search, Terminal, User, Briefcase, Mail, Code, Activity  } from 'lucide-react';
 
 // Tem de ter o "export default" aqui nesta linha
 export default function CommandPalette() {
@@ -48,6 +48,7 @@ export default function CommandPalette() {
     { id: 'skills', icon: <Code size={18} />, label: 'Ver Stack Tecnológica', action: () => scrollTo('skills') },
     { id: 'projetos', icon: <Briefcase size={18} />, label: 'Explorar Projetos', action: () => scrollTo('projetos') },
     { id: 'contato', icon: <Mail size={18} />, label: 'Contactos', action: () => scrollTo('contato') },
+    { id: 'stats', icon: <Activity size="{18}"/>, label: 'Ver Estatísticas do GitHub', action: () => scrollTo('stats') },
   ];
 
   const filteredCommands = commands.filter(cmd => 

@@ -37,27 +37,6 @@ export default function Skills() {
     }
   ];
 
-  // Gerador de "Commits" com as cores oficiais do GitHub Dark Mode
-  const generateMockCommits = () => {
-    return Array.from({ length: 112 }).map((_, i) => {
-      const intensity = Math.random();
-      // Cor base para dias sem commits (com borda subtil para dar textura)
-      let colorClass = "bg-[#161b22] border border-white/5"; 
-      
-      if (intensity > 0.85) colorClass = "bg-[#39d353] shadow-[0_0_8px_rgba(57,211,83,0.5)]"; // Verde muito forte
-      else if (intensity > 0.65) colorClass = "bg-[#26a641]"; // Verde forte
-      else if (intensity > 0.45) colorClass = "bg-[#006d32]"; // Verde médio
-      else if (intensity > 0.25) colorClass = "bg-[#0e4429]"; // Verde escuro
-      
-      return (
-        <div 
-          key={i} 
-          className={`w-3.5 h-3.5 rounded-sm ${colorClass} transition-colors duration-500`}
-        ></div>
-      );
-    });
-  };
-
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -85,7 +64,7 @@ export default function Skills() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         <motion.div 
           initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}

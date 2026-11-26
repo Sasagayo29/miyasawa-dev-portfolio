@@ -83,7 +83,7 @@ export default function About() {
 
   return (
     <section id="sobre" className="py-20 bg-transparent text-gray-300 font-mono border-t border-gray-800 relative z-10">
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.h2 
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
