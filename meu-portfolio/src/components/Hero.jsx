@@ -67,7 +67,7 @@ export default function Hero({ onOpenContact }) {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terminal-green opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-terminal-green" />
               </span>
-              <span>Radix Eng. &amp; Kinross • Industrial Data &amp; Full Stack</span>
+              <span>AddValue &amp; Kinross • Industrial Data &amp; Full Stack</span>
             </div>
 
             <p className="text-terminal-green mb-4 text-xs sm:text-sm md:text-base min-h-[24px]">
@@ -80,7 +80,7 @@ export default function Hero({ onOpenContact }) {
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-terminal-green via-emerald-400 to-cyan-400">
                 <TypewriterText
-                  text="Data Analyst Industrial."
+                  text="PL Developer Analyst."
                   delay={1800}
                   speed={40}
                   showCursor={true}
