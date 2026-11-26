@@ -1,25 +1,54 @@
 import React, { useState } from 'react';
+import { fetchGithubRepos } from '../services/github';
 import { motion } from 'framer-motion';
 
 export default function About() {
   const [output, setOutput] = useState([]);
 
-  const handleCommand = (cmd) => {
+  const handleCommand = async (cmd) => {
     if (cmd === 'focus') {
-      setOutput([...output, { 
-        command: '> cat tech_radar.md', 
-        result: 'Carregando stack de inovação atual...\n- Arquitetura: PWA e modelos Offline-First para zonas de sombra.\n- Automação: RPA avançado (Playwright/Selenium) integrado a ERPs.\n- Dados & IA: Pipelines ETL e redes neurais para visão computacional.'
-      }]);
+      setOutput((prev) => [
+        ...prev,
+        {
+          command: '> cat tech_radar.md',
+          result:
+            'Carregando stack de inovação atual...\n- Arquitetura: PWA e modelos Offline-First para zonas de sombra.\n- Automação: RPA avançado (Playwright/Selenium) integrado a ERPs.\n- Dados & IA: Pipelines ETL e redes neurais para visão computacional.',
+        },
+      ]);
     } else if (cmd === 'status') {
-      setOutput([...output, { 
-        command: '> systemctl status core-services', 
-        result: 'Verificando integridade dos serviços de missão crítica...\n[OK] MAPRIX Enterprise: Ativo e responsivo.\n[OK] MoviMeX: Sincronização em background operacional.\n[OK] KAD Console: Conexão WinRM e AD estabelecida.\nUptime: 99.99% - Operação industrial sem interrupções.'
-      }]);
+      setOutput((prev) => [
+        ...prev,
+        {
+          command: '> systemctl status core-services',
+          result:
+            'Verificando integridade dos serviços de missão crítica...\n[OK] MAPRIX Enterprise: Ativo e responsivo.\n[OK] MoviMeX: Sincronização em background operacional.\n[OK] KAD Console: Conexão WinRM e AD estabelecida.\nUptime: 99.99% - Operação industrial sem interrupções.',
+        },
+      ]);
     } else if (cmd === 'repos') {
-      setOutput([...output, { 
-        command: '> cat repos.json', 
-        result: `[\n  {\n    "name": "NEXUS",\n    "type": "Desktop App",\n    "stack": ["Python", "PySide6", "Pandas"],\n    "desc": "Relatórios de rateio e atualização massiva via Excel"\n  },\n  {\n    "name": "MineFlow",\n    "type": "Electron App",\n    "stack": ["JavaScript", "Mermaid.js", "SheetJS"],\n    "desc": "Criação de fluxos de trabalho via planilhas"\n  },\n  {\n    "name": "PySent",\n    "type": "Data Analytics",\n    "stack": ["JS", "Chart.js"],\n    "desc": "Análises estatísticas e visualização de dados"\n  }\n]`
-      }]);
+      try {
+        const repos = await fetchGithubRepos();
+        const topRepos = repos.slice(0, 5).map((r) => ({
+          name: r.title,
+          lang: r.category,
+          stars: r.stars,
+          desc: r.description,
+        }));
+        setOutput((prev) => [
+          ...prev,
+          {
+            command: '> cat repos.json --live',
+            result: JSON.stringify(topRepos, null, 2),
+          },
+        ]);
+      } catch {
+        setOutput((prev) => [
+          ...prev,
+          {
+            command: '> cat repos.json --live',
+            result: '[WARN] Falha ao consultar GitHub API. Tente novamente em instantes.',
+          },
+        ]);
+      }
     } else if (cmd === 'clear') {
       setOutput([]);
     }
