@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Terminal, User, Briefcase, Mail, Code, Activity  } from 'lucide-react';
+import { Search, Terminal, User, Briefcase, Mail, Code, Activity, FileDown } from 'lucide-react';
 
 // Tem de ter o "export default" aqui nesta linha
-export default function CommandPalette() {
+export default function CommandPalette({ onOpenContact }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const inputRef = useRef(null);
@@ -46,9 +46,30 @@ export default function CommandPalette() {
     { id: 'inicio', icon: <Terminal size={18} />, label: 'Ir para o Início', action: () => scrollTo('inicio') },
     { id: 'sobre', icon: <User size={18} />, label: 'Ir para Sobre Mim', action: () => scrollTo('sobre') },
     { id: 'skills', icon: <Code size={18} />, label: 'Ver Stack Tecnológica', action: () => scrollTo('skills') },
+    { id: 'stats', icon: <Activity size={18} />, label: 'Ver Estatísticas do GitHub', action: () => scrollTo('stats') },
     { id: 'projetos', icon: <Briefcase size={18} />, label: 'Explorar Projetos', action: () => scrollTo('projetos') },
-    { id: 'contato', icon: <Mail size={18} />, label: 'Contactos', action: () => scrollTo('contato') },
-    { id: 'stats', icon: <Activity size="{18}"/>, label: 'Ver Estatísticas do GitHub', action: () => scrollTo('stats') },
+    {
+      id: 'contato',
+      icon: <Mail size={18} />,
+      label: 'Abrir Rede de Contatos',
+      action: () => {
+        setIsOpen(false);
+        if (onOpenContact) onOpenContact();
+        else scrollTo('contato');
+      },
+    },
+    {
+      id: 'cv',
+      icon: <FileDown size={18} />,
+      label: 'Baixar Currículo (PDF)',
+      action: () => {
+        setIsOpen(false);
+        const link = document.createElement('a');
+        link.href = '/curriculo.pdf';
+        link.download = 'Riquelmy_Miyasawa_CV.pdf';
+        link.click();
+      },
+    },
   ];
 
   const filteredCommands = commands.filter(cmd => 

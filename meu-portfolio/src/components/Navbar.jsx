@@ -10,7 +10,7 @@ const navItems = [
   { id: 'contato', label: 'contato.jsx' },
 ];
 
-export default function Navbar() {
+export default function Navbar({ onOpenContact }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -22,10 +22,12 @@ export default function Navbar() {
 
   const scrollTo = (id) => {
     setMobileOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    if (id === 'contato' && onOpenContact) {
+      onOpenContact();
+      return;
     }
+    const element = document.getElementById(id);
+    if (element) element.scrollIntoView({ behavior: 'smooth' });
   };
 
   const triggerCommandPalette = () => {

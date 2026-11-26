@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Copy, Check, Network, ExternalLink } from 'lucide-react';
+import {
+  X,
+  Mail,
+  Copy,
+  Check,
+  Network,
+  ExternalLink,
+  FileDown,
+} from 'lucide-react';
 
 const EMAIL = 'riquelmymiyasawaborges@gmail.com';
+const CV_PATH = '/curriculo.pdf';
 
-const GithubIcon = ({ size = 22, className = '' }) => (
+const GithubIcon = ({ size = 20, className = '' }) => (
   <svg
     width={size}
     height={size}
@@ -21,7 +30,7 @@ const GithubIcon = ({ size = 22, className = '' }) => (
   </svg>
 );
 
-const LinkedinIcon = ({ size = 22, className = '' }) => (
+const LinkedinIcon = ({ size = 20, className = '' }) => (
   <svg
     width={size}
     height={size}
@@ -39,20 +48,21 @@ const LinkedinIcon = ({ size = 22, className = '' }) => (
   </svg>
 );
 
-// Coordenadas sincronizadas com o viewBox 400x400 do SVG
+// 5 nós distribuídos em pentágono regular (centro 200,200 | raio 132)
 const CONTACTS = [
   {
-    id: 'linkedin',
-    label: 'LinkedIn',
-    sub: '/in/riquelmy-miyasawa-borges',
-    href: 'https://www.linkedin.com/in/riquelmy-miyasawa-borges',
-    icon: LinkedinIcon,
-    x: 80,
-    y: 92,
-    xPct: 20,
-    yPct: 23,
-    accent: 'text-sky-400 border-sky-400/40 group-hover:border-sky-400',
-    glow: 'rgba(56, 189, 248, 0.25)',
+    id: 'cv',
+    label: 'Currículo',
+    sub: 'Baixar currículo atualizado (PDF)',
+    href: CV_PATH,
+    download: 'Riquelmy_Miyasawa_CV.pdf',
+    icon: FileDown,
+    x: 200,
+    y: 68,
+    xPct: 50,
+    yPct: 17,
+    accent: 'text-terminal-yellow border-terminal-yellow/40 group-hover:border-terminal-yellow',
+    glow: 'rgba(250, 204, 21, 0.25)',
   },
   {
     id: 'github',
@@ -60,24 +70,11 @@ const CONTACTS = [
     sub: 'github.com/Sasagayo29',
     href: 'https://github.com/Sasagayo29',
     icon: GithubIcon,
-    x: 320,
-    y: 92,
-    xPct: 80,
-    yPct: 23,
+    x: 326,
+    y: 159,
+    xPct: 81.5,
+    yPct: 39.8,
     accent: 'text-white border-gray-500/40 group-hover:border-terminal-green',
-    glow: 'rgba(46, 160, 67, 0.3)',
-  },
-  {
-    id: 'email',
-    label: 'Enviar E-mail',
-    sub: EMAIL,
-    href: `mailto:${EMAIL}`,
-    icon: Mail,
-    x: 80,
-    y: 308,
-    xPct: 20,
-    yPct: 77,
-    accent: 'text-terminal-green border-terminal-green/40 group-hover:border-terminal-green',
     glow: 'rgba(46, 160, 67, 0.3)',
   },
   {
@@ -86,32 +83,59 @@ const CONTACTS = [
     sub: 'Copiar endereço para área de transferência',
     action: 'copy',
     icon: Copy,
-    x: 320,
-    y: 308,
-    xPct: 80,
-    yPct: 77,
+    x: 278,
+    y: 307,
+    xPct: 69.5,
+    yPct: 76.8,
     accent: 'text-cyan-400 border-cyan-400/40 group-hover:border-cyan-400',
     glow: 'rgba(34, 211, 238, 0.25)',
   },
+  {
+    id: 'email',
+    label: 'E-mail',
+    sub: EMAIL,
+    href: `mailto:${EMAIL}`,
+    icon: Mail,
+    x: 122,
+    y: 307,
+    xPct: 30.5,
+    yPct: 76.8,
+    accent: 'text-terminal-green border-terminal-green/40 group-hover:border-terminal-green',
+    glow: 'rgba(46, 160, 67, 0.3)',
+  },
+  {
+    id: 'linkedin',
+    label: 'LinkedIn',
+    sub: '/in/riquelmy-miyasawa-borges',
+    href: 'https://www.linkedin.com/in/riquelmy-miyasawa-borges',
+    icon: LinkedinIcon,
+    x: 74,
+    y: 159,
+    xPct: 18.5,
+    yPct: 39.8,
+    accent: 'text-sky-400 border-sky-400/40 group-hover:border-sky-400',
+    glow: 'rgba(56, 189, 248, 0.25)',
+  },
 ];
 
-// Fios curvos externos e anel interno para formar a teia
+// Fios externos conectando os 5 nós do pentágono
 const OUTER_WEB_THREADS = [
-  'M 80 92 Q 200 128 320 92',
-  'M 320 92 Q 284 200 320 308',
-  'M 320 308 Q 200 272 80 308',
-  'M 80 308 Q 116 200 80 92',
+  'M 200 68 Q 252 129 326 159',
+  'M 326 159 Q 284 227 278 307',
+  'M 278 307 Q 200 288 122 307',
+  'M 122 307 Q 116 227 74 159',
+  'M 74 159 Q 148 129 200 68',
 ];
 
+// Anel interno da teia
 const INNER_WEB_PATH =
-  'M 134 141 Q 200 160 266 141 Q 248 200 266 259 Q 200 240 134 259 Q 152 200 134 141 Z';
+  'M 200 127 Q 229 160 269 177 Q 246 215 243 259 Q 200 248 157 259 Q 154 215 131 177 Q 171 160 200 127 Z';
 
 export default function ContactModal({ isOpen, onClose }) {
   const [expanded, setExpanded] = useState(false);
   const [hoveredId, setHoveredId] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // Dispara a expansão da teia logo após o modal abrir
   useEffect(() => {
     if (!isOpen) {
       setExpanded(false);
@@ -137,7 +161,7 @@ export default function ContactModal({ isOpen, onClose }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
     } catch {
-      // Fallback silencioso caso o navegador restrinja clipboard
+      // Fallback silencioso caso o navegador bloqueie clipboard
     }
   };
 
@@ -147,7 +171,6 @@ export default function ContactModal({ isOpen, onClose }) {
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 font-mono">
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -156,7 +179,6 @@ export default function ContactModal({ isOpen, onClose }) {
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           />
 
-          {/* Container do Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.92, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -178,19 +200,18 @@ export default function ContactModal({ isOpen, onClose }) {
               </button>
             </div>
 
-            {/* Palco da Teia Interativa */}
+            {/* Palco da Teia */}
             <div className="p-4 sm:p-6 bg-[#090d13]/90">
-              <div className="relative w-full max-w-[380px] aspect-square mx-auto select-none">
-                {/* Camada SVG: Teia e Conexões */}
+              <div className="relative w-full max-w-[400px] aspect-square mx-auto select-none">
                 <svg
                   viewBox="0 0 400 400"
                   className="absolute inset-0 w-full h-full pointer-events-none"
                 >
-                  {/* Anéis sutis de radar */}
+                  {/* Anel de radar externo */}
                   <motion.circle
                     cx="200"
                     cy="200"
-                    r="150"
+                    r="158"
                     fill="none"
                     stroke="rgba(46, 160, 67, 0.12)"
                     strokeWidth="1"
@@ -205,7 +226,7 @@ export default function ContactModal({ isOpen, onClose }) {
                   <motion.path
                     d={INNER_WEB_PATH}
                     fill="none"
-                    stroke="rgba(46, 160, 67, 0.2)"
+                    stroke="rgba(46, 160, 67, 0.22)"
                     strokeWidth="1"
                     initial={{ pathLength: 0, opacity: 0 }}
                     animate={
@@ -214,7 +235,7 @@ export default function ContactModal({ isOpen, onClose }) {
                     transition={{ duration: 0.55, delay: 0.15 }}
                   />
 
-                  {/* Fios externos conectando os nós entre si */}
+                  {/* Fios externos do pentágono */}
                   {OUTER_WEB_THREADS.map((d, i) => (
                     <motion.path
                       key={i}
@@ -226,11 +247,11 @@ export default function ContactModal({ isOpen, onClose }) {
                       animate={
                         expanded ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }
                       }
-                      transition={{ duration: 0.45, delay: 0.25 + i * 0.05 }}
+                      transition={{ duration: 0.45, delay: 0.22 + i * 0.05 }}
                     />
                   ))}
 
-                  {/* Linhas radiais do centro até cada contato */}
+                  {/* Linhas radiais do centro até cada nó */}
                   {CONTACTS.map((node, idx) => {
                     const isHighlighted = hoveredId === node.id;
                     return (
@@ -246,53 +267,54 @@ export default function ContactModal({ isOpen, onClose }) {
                         animate={
                           expanded ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }
                         }
-                        transition={{ duration: 0.35, delay: idx * 0.06 }}
+                        transition={{ duration: 0.35, delay: idx * 0.05 }}
                       />
                     );
                   })}
                 </svg>
 
-                {/* Nó Central (clicar recolhe ou reexpande a teia) */}
+                {/* Nó Central */}
                 <motion.button
                   type="button"
                   onClick={() => setExpanded((prev) => !prev)}
                   title={expanded ? 'Recolher conexões' : 'Expandir conexões'}
                   whileTap={{ scale: 0.94 }}
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-20 h-20 rounded-full bg-[#0d1117] border-2 border-terminal-green flex flex-col items-center justify-center shadow-[0_0_25px_rgba(46,160,67,0.35)] hover:shadow-[0_0_35px_rgba(57,211,83,0.55)] transition-shadow"
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#0d1117] border-2 border-terminal-green flex flex-col items-center justify-center shadow-[0_0_25px_rgba(46,160,67,0.35)] hover:shadow-[0_0_35px_rgba(57,211,83,0.55)] transition-shadow"
                 >
                   <span className="absolute inset-0 rounded-full border border-terminal-green/40 animate-ping opacity-30 pointer-events-none" />
-                  <span className="text-terminal-green font-bold text-base tracking-wider">RM</span>
-                  <span className="text-[9px] text-gray-400 uppercase mt-0.5">
+                  <span className="text-terminal-green font-bold text-sm sm:text-base tracking-wider">
+                    RM
+                  </span>
+                  <span className="text-[8px] sm:text-[9px] text-gray-400 uppercase mt-0.5">
                     {expanded ? 'ONLINE' : 'ABRIR'}
                   </span>
                 </motion.button>
 
-                {/* Nós de Contato expandindo a partir do centro */}
+                {/* Nós de Contato */}
                 {CONTACTS.map((node, idx) => {
                   const Icon = node.id === 'copy' && copied ? Check : node.icon;
                   const isExternal = node.href?.startsWith('http');
 
-                  const content = (
+                  const card = (
                     <div
                       style={{
-                        boxShadow:
-                          hoveredId === node.id ? `0 0 22px ${node.glow}` : 'none',
+                        boxShadow: hoveredId === node.id ? `0 0 22px ${node.glow}` : 'none',
                       }}
-                      className={`group flex flex-col items-center justify-center w-24 sm:w-28 py-3 px-2 rounded-xl bg-[#0d1117]/95 border backdrop-blur-md transition-all duration-200 hover:scale-105 ${node.accent}`}
+                      className={`group flex flex-col items-center justify-center w-20 sm:w-24 py-2.5 px-1.5 rounded-xl bg-[#0d1117]/95 border backdrop-blur-md transition-all duration-200 hover:scale-105 ${node.accent}`}
                     >
                       <Icon
-                        size={22}
+                        size={20}
                         className={
-                          node.id === 'copy' && copied ? 'text-terminal-green mb-1.5' : 'mb-1.5'
+                          node.id === 'copy' && copied ? 'text-terminal-green mb-1' : 'mb-1'
                         }
                       />
-                      <span className="text-[11px] sm:text-xs font-bold text-white text-center leading-tight">
+                      <span className="text-[10px] sm:text-[11px] font-bold text-white text-center leading-tight">
                         {node.id === 'copy' && copied ? 'Copiado!' : node.label}
                       </span>
                       {isExternal && (
                         <ExternalLink
-                          size={10}
-                          className="text-gray-500 group-hover:text-terminal-green mt-1"
+                          size={9}
+                          className="text-gray-500 group-hover:text-terminal-green mt-0.5"
                         />
                       )}
                     </div>
@@ -325,7 +347,7 @@ export default function ContactModal({ isOpen, onClose }) {
                         type: 'spring',
                         stiffness: 240,
                         damping: 20,
-                        delay: expanded ? 0.1 + idx * 0.07 : 0,
+                        delay: expanded ? 0.08 + idx * 0.06 : 0,
                       }}
                       onMouseEnter={() => setHoveredId(node.id)}
                       onMouseLeave={() => setHoveredId(null)}
@@ -333,15 +355,16 @@ export default function ContactModal({ isOpen, onClose }) {
                     >
                       {node.action === 'copy' ? (
                         <button type="button" onClick={handleCopyEmail} className="cursor-pointer">
-                          {content}
+                          {card}
                         </button>
                       ) : (
                         <a
                           href={node.href}
+                          download={node.download || undefined}
                           target={isExternal ? '_blank' : undefined}
                           rel={isExternal ? 'noopener noreferrer' : undefined}
                         >
-                          {content}
+                          {card}
                         </a>
                       )}
                     </motion.div>
@@ -350,7 +373,7 @@ export default function ContactModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Barra de status inferior (mostra o destino do nó em foco) */}
+            {/* Barra de status inferior */}
             <div className="bg-[#0d1117] px-5 py-3 border-t border-gray-800 flex items-center justify-between gap-3 text-[11px] text-gray-400">
               <span className="truncate">
                 <span className="text-terminal-green mr-1.5">&gt;</span>
