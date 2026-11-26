@@ -56,16 +56,16 @@ export default function About() {
 
   const timeline = [
     {
-      role: "Industrial Data Analyst / Consultor",
-      company: "Radix & Kinross Gold Corporation",
-      date: "Out 2025 - Presente",
+      role: "PL Developer Analyst",
+      company: "AddValue & Kinross Gold Corporation",
+      date: "Dez 2026 - Presente",
       desc: "Desenvolvimento de soluções enterprise, automação RPA, PWA offline-first e arquitetura de dados industriais."
     },
     {
-      role: "Suporte Técnico N1/N2",
-      company: "Softcom",
-      date: "Mar 2025 - Ago 2025",
-      desc: "Atendimento de infraestrutura, resolução de incidentes e estabilização de redes locais."
+      role: "Industrial Data Analyst / Consultor",
+      company: "Radix & Kinross Gold Corporation",
+      date: "Out 2025 - Dez 2026",
+      desc: "Desenvolvimento de soluções enterprise, automação RPA, PWA offline-first e arquitetura de dados industriais."
     },
     {
       role: "Estágio em Automação e Monitoramento",
