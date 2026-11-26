@@ -7,6 +7,7 @@ import Skills from './components/Skills';
 import Contact from './components/Contact';
 import BootScreen from './components/BootScreen';
 import CommandPalette from './components/CommandPalette';
+import GithubStats from './components/GithubStats';
 import ParticleBackground from './components/ParticleBackground'; // Importar aqui
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             <Hero />
             <About />
             <Skills />
+            <GithubStats />
             <Projects />
             <Contact />
           </div>
