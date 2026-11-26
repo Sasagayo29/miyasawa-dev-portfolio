@@ -76,7 +76,7 @@ export default function About() {
     {
       role: "Graduação: Análise e Desenv. de Sistemas",
       company: "Instituto Federal do Triângulo Mineiro (IFTM)",
-      date: "Em andamento",
+      date: "2023 - 2026",
       desc: "Base acadêmica focada em Engenharia de Software, Kotlin, Java e estruturas de dados."
     }
   ];
