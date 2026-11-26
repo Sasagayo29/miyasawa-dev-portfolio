@@ -1,9 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Star, GitFork, RefreshCw } from 'lucide-react';
+import { Star, GitFork, RefreshCw, ArrowUpRight } from 'lucide-react';
 import { projects } from '../data/projects';
 import { fetchGithubRepos } from '../services/github';
 import ProjectModal from './ProjectModal';
+
+const formatUpdatedAt = (dateStr) => {
+  if (!dateStr) return '';
+  return new Intl.DateTimeFormat('pt-BR', {
+    month: 'short',
+    year: 'numeric',
+  })
+    .format(new Date(dateStr))
+    .replace('.', '');
+};
 
 const GlowCard = ({ project, onClick, index }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -108,7 +118,7 @@ export default function Projects() {
 
         {/* Repositórios Dinâmicos do GitHub */}
         <div>
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <motion.h2
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -120,19 +130,24 @@ export default function Projects() {
             </motion.h2>
 
             <span className="text-xs text-gray-500 flex items-center gap-2">
-              <RefreshCw size={12} className={loadingRepos ? 'animate-spin text-terminal-green' : 'text-terminal-green'} />
-              {loadingRepos ? 'Sincronizando com GitHub...' : `${githubRepos.length} repositórios sincronizados`}
+              <RefreshCw
+                size={12}
+                className={loadingRepos ? 'animate-spin text-terminal-green' : 'text-terminal-green'}
+              />
+              {loadingRepos
+                ? 'Sincronizando com GitHub...'
+                : `${filteredRepos.length} de ${githubRepos.length} repositórios`}
             </span>
           </div>
 
           {/* Filtros dinâmicos por linguagem */}
           {!loadingRepos && !repoError && (
-            <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-800 pb-4">
+            <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-800 pb-4">
               {languages.map((lang) => (
                 <button
                   key={lang}
                   onClick={() => setActiveLanguage(lang)}
-                  className={`px-4 py-2 text-sm rounded transition-colors ${
+                  className={`px-3 py-1.5 text-xs md:text-sm rounded transition-colors ${
                     activeLanguage === lang
                       ? 'bg-terminal-green/10 text-terminal-green border border-terminal-green/30'
                       : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 border border-transparent'
@@ -144,17 +159,22 @@ export default function Projects() {
             </div>
           )}
 
-          {/* Skeleton Loading / Erro / Grid de Repos */}
+          {/* Container com rolagem 4x3 (4 colunas x 3 linhas visíveis) */}
           {loadingRepos ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-[#0f141b] border border-gray-800 rounded p-5 animate-pulse space-y-3">
-                  <div className="h-5 bg-gray-800 rounded w-2/3" />
-                  <div className="h-3 bg-gray-800 rounded w-full" />
-                  <div className="h-3 bg-gray-800 rounded w-4/5" />
-                  <div className="flex gap-2 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(12)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-[152px] bg-[#0f141b] border border-gray-800 rounded-lg p-4 animate-pulse flex flex-col justify-between"
+                >
+                  <div className="space-y-2.5">
+                    <div className="h-4 bg-gray-800 rounded w-3/4" />
+                    <div className="h-3 bg-gray-800 rounded w-full" />
+                    <div className="h-3 bg-gray-800 rounded w-2/3" />
+                  </div>
+                  <div className="flex justify-between">
                     <div className="h-4 bg-gray-800 rounded w-14" />
-                    <div className="h-4 bg-gray-800 rounded w-14" />
+                    <div className="h-4 bg-gray-800 rounded w-12" />
                   </div>
                 </div>
               ))}
@@ -164,50 +184,76 @@ export default function Projects() {
               {repoError}
             </div>
           ) : (
-            <motion.div
-              key={activeLanguage}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-            >
-              {filteredRepos.map((repo) => (
-                <div
-                  key={repo.id}
-                  onClick={() => setSelectedProject(repo)}
-                  className="bg-[#0f141b] border border-gray-800 rounded p-5 hover:border-terminal-green/40 transition-colors cursor-pointer group flex flex-col"
-                >
-                  <div className="flex justify-between items-start gap-2 mb-2">
-                    <h4 className="text-white font-bold group-hover:text-terminal-green transition-colors truncate">
-                      {repo.title}
-                    </h4>
-                    <div className="flex items-center gap-2 text-[11px] text-gray-500 shrink-0">
-                      {repo.stars > 0 && (
-                        <span className="flex items-center gap-0.5">
-                          <Star size={11} className="text-terminal-yellow" /> {repo.stars}
-                        </span>
-                      )}
-                      {repo.forks > 0 && (
-                        <span className="flex items-center gap-0.5">
-                          <GitFork size={11} /> {repo.forks}
-                        </span>
-                      )}
+            <div className="bg-[#0a0d12]/50 border border-gray-800/80 rounded-lg p-3 backdrop-blur-sm">
+              <motion.div
+                key={activeLanguage}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[496px] overflow-y-auto pr-2"
+              >
+                {filteredRepos.map((repo) => (
+                  <div
+                    key={repo.id}
+                    onClick={() => setSelectedProject(repo)}
+                    className="h-[152px] bg-[#0f141b] border border-gray-800 rounded-lg p-4 hover:border-terminal-green/50 hover:bg-[#131a24] transition-all cursor-pointer group flex flex-col"
+                  >
+                    {/* Título e métricas */}
+                    <div className="flex justify-between items-start gap-2 mb-2">
+                      <h4
+                        title={repo.title}
+                        className="text-sm text-white font-bold group-hover:text-terminal-green transition-colors truncate"
+                      >
+                        {repo.title}
+                      </h4>
+                      <div className="flex items-center gap-1.5 text-[11px] text-gray-500 shrink-0">
+                        {repo.stars > 0 && (
+                          <span className="flex items-center gap-0.5">
+                            <Star size={11} className="text-terminal-yellow" /> {repo.stars}
+                          </span>
+                        )}
+                        {repo.forks > 0 && (
+                          <span className="flex items-center gap-0.5">
+                            <GitFork size={11} /> {repo.forks}
+                          </span>
+                        )}
+                        <ArrowUpRight
+                          size={13}
+                          className="text-gray-600 group-hover:text-terminal-green transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Descrição ou fallback minimalista de terminal */}
+                    {repo.description ? (
+                      <p className="text-gray-400 text-xs font-sans leading-relaxed line-clamp-2">
+                        {repo.description}
+                      </p>
+                    ) : (
+                      <p className="text-gray-500/80 text-[11px] font-mono leading-relaxed">
+                        <span className="text-terminal-green/70">//</span> inspecionar código e README
+                      </p>
+                    )}
+
+                    {/* Rodapé: stack + data de atualização */}
+                    <div className="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-gray-800/60">
+                      <div className="flex flex-wrap gap-1.5 min-w-0 overflow-hidden">
+                        {repo.techStack.slice(0, 2).map((t, i) => (
+                          <span
+                            key={i}
+                            className="text-[10px] text-cyan-400/90 bg-cyan-400/10 border border-cyan-400/20 px-2 py-0.5 rounded truncate"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                      <span className="text-[10px] text-gray-600 shrink-0">
+                        {formatUpdatedAt(repo.updatedAt)}
+                      </span>
                     </div>
                   </div>
-
-                  <p className="text-gray-500 text-xs font-sans mb-4 min-h-[40px] line-clamp-2">
-                    {repo.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 mt-auto">
-                    {repo.techStack.map((t, i) => (
-                      <span key={i} className="text-[10px] text-gray-400 bg-gray-800 px-2 py-1 rounded">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </motion.div>
+                ))}
+              </motion.div>
+            </div>
           )}
         </div>
       </div>

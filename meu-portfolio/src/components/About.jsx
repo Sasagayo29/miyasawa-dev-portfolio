@@ -31,7 +31,7 @@ export default function About() {
           name: r.title,
           lang: r.category,
           stars: r.stars,
-          desc: r.description,
+          desc: r.description || 'Ver código-fonte no repositório',
         }));
         setOutput((prev) => [
           ...prev,

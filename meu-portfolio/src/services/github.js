@@ -45,7 +45,7 @@ export function getFileExtension(filename = '') {
 }
 
 export async function fetchGithubRepos() {
-  const cacheKey = `gh_repos_${GITHUB_USERNAME}`;
+  const cacheKey = `gh_repos_v2_${GITHUB_USERNAME}`;
   const cached = getCache(cacheKey);
   if (cached) return cached;
 
@@ -66,11 +66,11 @@ export async function fetchGithubRepos() {
       isGithubRepo: true,
       repoName: repo.name,
       title: repo.name,
-      description: repo.description || 'Repositório público sem descrição cadastrada no GitHub.',
+      description: repo.description?.trim() || '',
       category: repo.language || 'Outros',
       techStack: [
         ...(repo.language ? [repo.language] : []),
-        ...(repo.topics || []).slice(0, 4),
+        ...(repo.topics || []).slice(0, 3),
       ],
       htmlUrl: repo.html_url,
       homepage: repo.homepage,

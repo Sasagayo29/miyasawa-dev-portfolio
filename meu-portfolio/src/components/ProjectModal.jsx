@@ -327,7 +327,9 @@ export default function ProjectModal({ project, isOpen, onClose }) {
                     {project.category || 'Sistema'}
                   </span>
                   <h4 className="text-lg text-white font-semibold mb-3">Visão Geral</h4>
-                  <p className="leading-relaxed mb-6 text-gray-400">{project.description || project.desc}</p>
+                  <p className="font-sans text-gray-300">
+                    {project.description || 'Abra a aba "Arquivos" acima para explorar o código-fonte deste repositório.'}
+                  </p>
 
                   <h4 className="text-lg text-white font-semibold mb-3">Stack Tecnológica</h4>
                   <div className="flex flex-wrap gap-2">
