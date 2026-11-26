@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { Star, GitFork, RefreshCw } from 'lucide-react';
 import { projects } from '../data/projects';
+import { fetchGithubRepos } from '../services/github';
 import ProjectModal from './ProjectModal';
 
-// Sub-componente para gerir o brilho individual de cada cartão
 const GlowCard = ({ project, onClick, index }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -16,7 +17,7 @@ const GlowCard = ({ project, onClick, index }) => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -25,21 +26,19 @@ const GlowCard = ({ project, onClick, index }) => {
       onClick={() => onClick(project)}
       className="relative bg-surface border border-gray-800 rounded-lg p-6 transition-all duration-300 group cursor-pointer flex flex-col overflow-hidden"
     >
-      {/* Camada do Brilho (Glow) */}
-      <div 
+      <div
         className="pointer-events-none absolute -inset-px rounded-lg opacity-0 transition duration-300 group-hover:opacity-100 z-0"
         style={{
-          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(46, 160, 67, 0.15), transparent 40%)`
+          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(46, 160, 67, 0.15), transparent 40%)`,
         }}
       />
-      
-      {/* Conteúdo do Cartão (z-10 para ficar acima do brilho) */}
+
       <div className="relative z-10 flex-1 flex flex-col">
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start mb-4 gap-2">
           <h3 className="text-xl font-bold text-white group-hover:text-terminal-green transition-colors">
             {project.title}
           </h3>
-          <span className="text-xs text-terminal-yellow bg-terminal-yellow/10 px-2 py-1 rounded">
+          <span className="text-xs text-terminal-yellow bg-terminal-yellow/10 px-2 py-1 rounded shrink-0">
             {project.category}
           </span>
         </div>
@@ -48,7 +47,10 @@ const GlowCard = ({ project, onClick, index }) => {
         </p>
         <div className="flex flex-wrap gap-2 mt-auto">
           {project.techStack?.map((tech, idx) => (
-            <span key={idx} className="text-xs text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded border border-cyan-400/20">
+            <span
+              key={idx}
+              className="text-xs text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded border border-cyan-400/20"
+            >
               {tech}
             </span>
           ))}
@@ -59,22 +61,44 @@ const GlowCard = ({ project, onClick, index }) => {
 };
 
 export default function Projects() {
-  const [activeCategory, setActiveCategory] = useState(projects.categories[0].name);
+  const [githubRepos, setGithubRepos] = useState([]);
+  const [loadingRepos, setLoadingRepos] = useState(true);
+  const [repoError, setRepoError] = useState('');
+  const [activeLanguage, setActiveLanguage] = useState('Todos');
   const [selectedProject, setSelectedProject] = useState(null);
+
+  useEffect(() => {
+    fetchGithubRepos()
+      .then((repos) => setGithubRepos(repos))
+      .catch(() => setRepoError('Limite da API do GitHub atingido temporariamente.'))
+      .finally(() => setLoadingRepos(false));
+  }, []);
+
+  const languages = useMemo(() => {
+    const langs = Array.from(new Set(githubRepos.map((r) => r.category)));
+    return ['Todos', ...langs];
+  }, [githubRepos]);
+
+  const filteredRepos = useMemo(() => {
+    if (activeLanguage === 'Todos') return githubRepos;
+    return githubRepos.filter((r) => r.category === activeLanguage);
+  }, [githubRepos, activeLanguage]);
 
   return (
     <section id="projetos" className="py-20 bg-transparent text-gray-300 font-mono border-t border-gray-800 relative">
       <div className="max-w-6xl mx-auto px-6">
-        
+        {/* Projetos Corporativos em Destaque */}
         <div className="mb-16">
-          <motion.h2 
-            initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+          <motion.h2
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
             className="text-2xl md:text-3xl text-white font-bold mb-8 flex items-center gap-3"
           >
-            <span className="text-terminal-green">{">"}</span> 
+            <span className="text-terminal-green">{'>'}</span>
             <span>ls ./projetos/destaques</span>
           </motion.h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {projects.featured.map((project, idx) => (
               <GlowCard key={project.id} project={project} index={idx} onClick={setSelectedProject} />
@@ -82,51 +106,100 @@ export default function Projects() {
           </div>
         </div>
 
+        {/* Repositórios Dinâmicos do GitHub */}
         <div>
-          <motion.h2 
-            initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-            className="text-2xl md:text-3xl text-white font-bold mb-8 flex items-center gap-3"
-          >
-            <span className="text-terminal-green">{">"}</span> 
-            <span>cat repos.json</span>
-          </motion.h2>
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+            <motion.h2
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="text-2xl md:text-3xl text-white font-bold flex items-center gap-3"
+            >
+              <span className="text-terminal-green">{'>'}</span>
+              <span>gh repo list --live</span>
+            </motion.h2>
 
-          <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-800 pb-4">
-            {projects.categories.map((cat) => (
-              <button
-                key={cat.name}
-                onClick={() => setActiveCategory(cat.name)}
-                className={`px-4 py-2 text-sm rounded transition-colors ${
-                  activeCategory === cat.name 
-                    ? 'bg-terminal-green/10 text-terminal-green border border-terminal-green/30' 
-                    : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 border border-transparent'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
+            <span className="text-xs text-gray-500 flex items-center gap-2">
+              <RefreshCw size={12} className={loadingRepos ? 'animate-spin text-terminal-green' : 'text-terminal-green'} />
+              {loadingRepos ? 'Sincronizando com GitHub...' : `${githubRepos.length} repositórios sincronizados`}
+            </span>
           </div>
 
-          <motion.div 
-            key={activeCategory}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
-            {projects.categories
-              .find((c) => c.name === activeCategory)
-              ?.items.map((item, index) => (
-                <div 
-                  key={index} 
-                  onClick={() => setSelectedProject(item)}
-                  className="bg-[#0f141b] border border-gray-800 rounded p-5 hover:border-gray-600 transition-colors cursor-pointer group"
+          {/* Filtros dinâmicos por linguagem */}
+          {!loadingRepos && !repoError && (
+            <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-800 pb-4">
+              {languages.map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => setActiveLanguage(lang)}
+                  className={`px-4 py-2 text-sm rounded transition-colors ${
+                    activeLanguage === lang
+                      ? 'bg-terminal-green/10 text-terminal-green border border-terminal-green/30'
+                      : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 border border-transparent'
+                  }`}
                 >
-                  <h4 className="text-white font-bold mb-2 group-hover:text-terminal-green transition-colors">{item.title}</h4>
+                  {lang}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Skeleton Loading / Erro / Grid de Repos */}
+          {loadingRepos ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-[#0f141b] border border-gray-800 rounded p-5 animate-pulse space-y-3">
+                  <div className="h-5 bg-gray-800 rounded w-2/3" />
+                  <div className="h-3 bg-gray-800 rounded w-full" />
+                  <div className="h-3 bg-gray-800 rounded w-4/5" />
+                  <div className="flex gap-2 pt-2">
+                    <div className="h-4 bg-gray-800 rounded w-14" />
+                    <div className="h-4 bg-gray-800 rounded w-14" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : repoError ? (
+            <div className="p-6 bg-surface border border-red-900/50 rounded-lg text-sm text-red-400">
+              {repoError}
+            </div>
+          ) : (
+            <motion.div
+              key={activeLanguage}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+              {filteredRepos.map((repo) => (
+                <div
+                  key={repo.id}
+                  onClick={() => setSelectedProject(repo)}
+                  className="bg-[#0f141b] border border-gray-800 rounded p-5 hover:border-terminal-green/40 transition-colors cursor-pointer group flex flex-col"
+                >
+                  <div className="flex justify-between items-start gap-2 mb-2">
+                    <h4 className="text-white font-bold group-hover:text-terminal-green transition-colors truncate">
+                      {repo.title}
+                    </h4>
+                    <div className="flex items-center gap-2 text-[11px] text-gray-500 shrink-0">
+                      {repo.stars > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <Star size={11} className="text-terminal-yellow" /> {repo.stars}
+                        </span>
+                      )}
+                      {repo.forks > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <GitFork size={11} /> {repo.forks}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
                   <p className="text-gray-500 text-xs font-sans mb-4 min-h-[40px] line-clamp-2">
-                    {item.desc}
+                    {repo.description}
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {item.tech.map((t, i) => (
+
+                  <div className="flex flex-wrap gap-2 mt-auto">
+                    {repo.techStack.map((t, i) => (
                       <span key={i} className="text-[10px] text-gray-400 bg-gray-800 px-2 py-1 rounded">
                         {t}
                       </span>
@@ -134,14 +207,15 @@ export default function Projects() {
                   </div>
                 </div>
               ))}
-          </motion.div>
+            </motion.div>
+          )}
         </div>
       </div>
 
-      <ProjectModal 
-        project={selectedProject} 
-        isOpen={!!selectedProject} 
-        onClose={() => setSelectedProject(null)} 
+      <ProjectModal
+        project={selectedProject}
+        isOpen={!!selectedProject}
+        onClose={() => setSelectedProject(null)}
       />
     </section>
   );
