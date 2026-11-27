@@ -44,7 +44,6 @@ export default function GithubStats() {
     try {
       const data = await fetchGithubStats(force);
       setStats(data);
-      // Se as APIs de contribuições estiverem fora, cai automaticamente no Pacman Graph do seu GitHub
       if (!data.hasContributionData) {
         setGraphMode('pacman');
       }
@@ -65,11 +64,13 @@ export default function GithubStats() {
   const kpis = stats
     ? [
         {
-          label: 'Contribuições (12m)',
+          label: 'Contribuições no GitHub',
           value: stats.hasContributionData
-            ? stats.totalContributions.toLocaleString('pt-BR')
+            ? stats.allTimeContributions.toLocaleString('pt-BR')
             : '--',
-          sub: `Desde ${stats.joinedYear} no GitHub`,
+          sub: stats.hasContributionData
+            ? `${stats.totalContributions.toLocaleString('pt-BR')} nos últimos 12m • Desde ${stats.joinedYear}`
+            : `Desde ${stats.joinedYear} no GitHub`,
           icon: <Activity size={18} className="text-terminal-green" />,
         },
         {
@@ -171,7 +172,7 @@ export default function GithubStats() {
 
             {/* Linha 2: Atividade Mensal + Top Linguagens */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Gráfico de Barras Mensal (altura em pixels para não colapsar) */}
+              {/* Gráfico de Barras Mensal */}
               <div className="lg:col-span-7 bg-surface/80 backdrop-blur-sm border border-gray-800 rounded-lg p-5 sm:p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -252,6 +253,13 @@ export default function GithubStats() {
                         className={LANG_COLORS[i % LANG_COLORS.length]}
                       />
                     ))}
+                    {stats.otherLanguagesPercent > 0 && (
+                      <div
+                        style={{ width: `${stats.otherLanguagesPercent}%` }}
+                        title={`Outras linguagens: ${stats.otherLanguagesPercent}%`}
+                        className="bg-gray-600/70"
+                      />
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -2,7 +2,7 @@ const GITHUB_USERNAME = 'Sasagayo29';
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutos
 const MAX_PREVIEW_BYTES = 300 * 1024; // 300 KB
 
-// Repositórios que não devem aparecer na vitrine
+// Repositórios que não devem aparecer na vitrine de projetos
 const IGNORED_REPOS = [GITHUB_USERNAME.toLowerCase()];
 
 const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp']);
@@ -11,6 +11,14 @@ const BINARY_EXTENSIONS = new Set([
   'mp4', 'mov', 'avi', 'mp3', 'wav', 'woff', 'woff2', 'ttf', 'eot',
   'xlsx', 'xls', 'docx', 'doc', 'pptx', 'pyc', 'db', 'sqlite', 'sqlite3',
 ]);
+
+const LEVEL_MAP = {
+  NONE: 0,
+  FIRST_QUARTILE: 1,
+  SECOND_QUARTILE: 2,
+  THIRD_QUARTILE: 3,
+  FOURTH_QUARTILE: 4,
+};
 
 function getCache(key) {
   try {
@@ -31,7 +39,7 @@ function setCache(key, data) {
   try {
     localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
   } catch {
-    // Ignora se o storage estiver indisponível
+    // Ignora se o storage estiver indisponível ou cheio
   }
 }
 
@@ -39,15 +47,31 @@ function encodePath(path) {
   return path.split('/').map(encodeURIComponent).join('/');
 }
 
+function computeLevel(count) {
+  if (!count || count <= 0) return 0;
+  if (count <= 2) return 1;
+  if (count <= 5) return 2;
+  if (count <= 9) return 3;
+  return 4;
+}
+
+function toLocalISODate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate()
+  ).padStart(2, '0')}`;
+}
+
 export function getFileExtension(filename = '') {
   const parts = filename.toLowerCase().split('.');
   return parts.length > 1 ? parts.pop() : '';
 }
 
-export async function fetchGithubRepos() {
-  const cacheKey = `gh_repos_v2_${GITHUB_USERNAME}`;
-  const cached = getCache(cacheKey);
-  if (cached) return cached;
+async function fetchRawPublicRepos(forceRefresh = false) {
+  const cacheKey = `gh_raw_repos_v1_${GITHUB_USERNAME}`;
+  if (!forceRefresh) {
+    const cached = getCache(cacheKey);
+    if (cached) return cached;
+  }
 
   const res = await fetch(
     `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`
@@ -58,8 +82,14 @@ export async function fetchGithubRepos() {
   }
 
   const rawRepos = await res.json();
+  setCache(cacheKey, rawRepos);
+  return rawRepos;
+}
 
-  const formatted = rawRepos
+export async function fetchGithubRepos() {
+  const rawRepos = await fetchRawPublicRepos(false);
+
+  return rawRepos
     .filter((repo) => !repo.fork && !IGNORED_REPOS.includes(repo.name.toLowerCase()))
     .map((repo) => ({
       id: `gh-${repo.id}`,
@@ -79,9 +109,6 @@ export async function fetchGithubRepos() {
       defaultBranch: repo.default_branch || 'main',
       updatedAt: repo.updated_at,
     }));
-
-  setCache(cacheKey, formatted);
-  return formatted;
 }
 
 export async function fetchRepoReadme(repoName) {
@@ -183,59 +210,60 @@ export function resolveGithubImageUrl(src, repoName, branch = 'main') {
   return `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${repoName}/${branch}/${cleanSrc}`;
 }
 
-const LEVEL_MAP = {
-  NONE: 0,
-  FIRST_QUARTILE: 1,
-  SECOND_QUARTILE: 2,
-  THIRD_QUARTILE: 3,
-  FOURTH_QUARTILE: 4,
-};
-
-function computeLevel(count) {
-  if (!count || count <= 0) return 0;
-  if (count <= 2) return 1;
-  if (count <= 5) return 2;
-  if (count <= 9) return 3;
-  return 4;
-}
-
 async function fetchContributionsWithFallback() {
-  // 1ª tentativa: API primária (jogruber)
+  const now = new Date();
+  const todayISO = toLocalISODate(now);
+  const oneYearAgo = new Date(now);
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  const oneYearAgoISO = toLocalISODate(oneYearAgo);
+
+  // 1ª tentativa: histórico completo (todos os anos)
   try {
     const res = await fetch(
-      `https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME.toLowerCase()}?y=last`
+      `https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME.toLowerCase()}`
     );
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data?.contributions) && data.contributions.length > 0) {
-        const contributions = data.contributions.map((d) => ({
-          date: d.date,
-          count: Number(d.count) || 0,
-          level: typeof d.level === 'number' ? d.level : computeLevel(d.count),
-        }));
-        const total =
-          data?.total?.lastYear ??
-          contributions.reduce((acc, day) => acc + day.count, 0);
-        return { contributions, total };
+        const allDays = data.contributions
+          .filter((d) => d.date <= todayISO)
+          .map((d) => ({
+            date: d.date,
+            count: Number(d.count) || 0,
+            level: typeof d.level === 'number' ? d.level : computeLevel(d.count),
+          }))
+          .sort((a, b) => a.date.localeCompare(b.date));
+
+        const lastYearDays = allDays.filter((d) => d.date >= oneYearAgoISO);
+
+        const allTimeTotal =
+          Object.values(data.total || {}).reduce((acc, v) => acc + (Number(v) || 0), 0) ||
+          allDays.reduce((acc, day) => acc + day.count, 0);
+
+        const lastYearTotal = lastYearDays.reduce((acc, day) => acc + day.count, 0);
+
+        return {
+          contributions: lastYearDays,
+          totalLastYear: lastYearTotal,
+          allTimeTotal,
+        };
       }
     }
   } catch {
     // Segue para o fallback
   }
 
-  // 2ª tentativa: API secundária (Deno)
+  // 2ª tentativa: API secundária (último ano)
   try {
     const res = await fetch(
       `https://github-contributions-api.deno.dev/${GITHUB_USERNAME}.json`
     );
     if (res.ok) {
       const data = await res.json();
-      const flat = Array.isArray(data?.contributions)
-        ? data.contributions.flat()
-        : [];
+      const flat = Array.isArray(data?.contributions) ? data.contributions.flat() : [];
       if (flat.length > 0) {
         const contributions = flat
-          .filter((d) => d?.date)
+          .filter((d) => d?.date && d.date <= todayISO)
           .map((d) => {
             const count = Number(d.contributionCount ?? d.count) || 0;
             const mappedLevel =
@@ -249,20 +277,21 @@ async function fetchContributionsWithFallback() {
         const total =
           Number(data?.totalContributions) ||
           contributions.reduce((acc, day) => acc + day.count, 0);
-        return { contributions, total };
+
+        return { contributions, totalLastYear: total, allTimeTotal: total };
       }
     }
   } catch {
     // Ambas indisponíveis no momento
   }
 
-  return { contributions: [], total: 0 };
+  return { contributions: [], totalLastYear: 0, allTimeTotal: 0 };
 }
 
 let inFlightStatsPromise = null;
 
 export async function fetchGithubStats(forceRefresh = false) {
-  const cacheKey = `gh_stats_v2_${GITHUB_USERNAME}`;
+  const cacheKey = `gh_stats_v3_${GITHUB_USERNAME}`;
 
   if (!forceRefresh) {
     const cached = getCache(cacheKey);
@@ -274,15 +303,15 @@ export async function fetchGithubStats(forceRefresh = false) {
   }
 
   inFlightStatsPromise = (async () => {
-    const [userRes, reposRes, contribData] = await Promise.all([
+    const [userRes, rawRepos, contribData] = await Promise.all([
       fetch(`https://api.github.com/users/${GITHUB_USERNAME}`)
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
-      fetchGithubRepos().catch(() => []),
+      fetchRawPublicRepos(forceRefresh).catch(() => []),
       fetchContributionsWithFallback(),
     ]);
 
-    const { contributions, total: totalContributions } = contribData;
+    const { contributions, totalLastYear, allTimeTotal } = contribData;
     const hasContributionData = contributions.length > 0;
 
     let activeDays = 0;
@@ -321,16 +350,19 @@ export async function fetchGithubStats(forceRefresh = false) {
         };
       });
 
+    // Soma estrelas e forks de todos os repositórios próprios (incluindo o repo de perfil)
+    const ownRepos = rawRepos.filter((r) => !r.fork);
+    const totalStars = ownRepos.reduce((acc, r) => acc + (r.stargazers_count || 0), 0);
+    const totalForks = ownRepos.reduce((acc, r) => acc + (r.forks_count || 0), 0);
+
     const langCounts = {};
-    for (const repo of reposRes) {
-      if (repo.category && repo.category !== 'Outros') {
-        langCounts[repo.category] = (langCounts[repo.category] || 0) + 1;
+    for (const repo of ownRepos) {
+      if (repo.language) {
+        langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
       }
     }
 
-    const totalCategorized =
-      Object.values(langCounts).reduce((a, b) => a + b, 0) || 1;
-
+    const totalCategorized = Object.values(langCounts).reduce((a, b) => a + b, 0) || 1;
     const topLanguages = Object.entries(langCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
@@ -340,25 +372,29 @@ export async function fetchGithubStats(forceRefresh = false) {
         percent: Math.round((count / totalCategorized) * 100),
       }));
 
+    const topPercentSum = topLanguages.reduce((acc, l) => acc + l.percent, 0);
+    const otherLanguagesPercent = Math.max(0, 100 - topPercentSum);
+
     const stats = {
       username: GITHUB_USERNAME,
       hasContributionData,
-      publicRepos: userRes?.public_repos ?? reposRes.length,
+      publicRepos: userRes?.public_repos ?? rawRepos.length,
       followers: userRes?.followers ?? 0,
       joinedYear: userRes?.created_at
         ? new Date(userRes.created_at).getFullYear()
         : 2023,
-      totalContributions,
+      allTimeContributions: allTimeTotal,
+      totalContributions: totalLastYear,
       activeDays,
       longestStreak,
-      totalStars: reposRes.reduce((acc, r) => acc + (r.stars || 0), 0),
-      totalForks: reposRes.reduce((acc, r) => acc + (r.forks || 0), 0),
+      totalStars,
+      totalForks,
       topLanguages,
+      otherLanguagesPercent,
       monthlyActivity,
       contributions,
     };
 
-    // Só grava no cache se as contribuições tiverem vindo preenchidas
     if (hasContributionData) {
       setCache(cacheKey, stats);
     }
