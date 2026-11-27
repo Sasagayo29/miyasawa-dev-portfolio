@@ -154,11 +154,11 @@ export default function Hero({ onOpenContact }) {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-[#0d1117]/80 border border-gray-800 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mb-1">
-                      <Activity size={12} className="text-terminal-green" />
-                      <span>CONTRIB/ANO</span>
+                      <Activity size={12} className="text-terminal-green shrink-0" />
+                      <span className="truncate">CONTRIBUIÇÕES</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-white">
-                      {stats ? stats.totalContributions.toLocaleString('pt-BR') : '...'}
+                      {stats ? stats.allTimeContributions.toLocaleString('pt-BR') : '...'}
                     </div>
                   </div>
 
