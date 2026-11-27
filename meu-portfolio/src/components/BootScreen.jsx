@@ -11,7 +11,7 @@ export default function BootScreen({ onComplete }) {
     "[OK] Inicializando módulos de Engenharia de Software...",
     "[OK] Carregando protocolos Offline-First e PWA...",
     "[WARN] Nível de cafeína abaixo do ideal. Bypass ativado.",
-    "[OK] Estabelecendo conexão segura com cluster Radix/Kinross...",
+    "[OK] Estabelecendo conexão segura com cluster AddValue/Kinross...",
     "[OK] Descriptografando portfólio industrial...",
     "Acesso concedido. Inicializando interface..."
   ];
