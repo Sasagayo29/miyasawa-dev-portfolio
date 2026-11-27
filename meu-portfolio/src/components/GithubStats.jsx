@@ -8,6 +8,7 @@ import {
   Code2,
   ExternalLink,
   Calendar,
+  RefreshCw,
 } from 'lucide-react';
 import { fetchGithubStats } from '../services/github';
 
@@ -28,15 +29,33 @@ const LANG_COLORS = [
   'bg-purple-400',
 ];
 
+const MAX_BAR_PX = 128;
+
 export default function GithubStats() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [graphMode, setGraphMode] = useState('heatmap'); // 'heatmap' | 'pacman'
+  const [refreshing, setRefreshing] = useState(false);
+  const [graphMode, setGraphMode] = useState('heatmap');
+
+  const loadStats = async (force = false) => {
+    if (force) setRefreshing(true);
+    else setLoading(true);
+
+    try {
+      const data = await fetchGithubStats(force);
+      setStats(data);
+      // Se as APIs de contribuições estiverem fora, cai automaticamente no Pacman Graph do seu GitHub
+      if (!data.hasContributionData) {
+        setGraphMode('pacman');
+      }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    fetchGithubStats()
-      .then((data) => setStats(data))
-      .finally(() => setLoading(false));
+    loadStats(false);
   }, []);
 
   const maxMonthly = stats?.monthlyActivity?.length
@@ -47,7 +66,9 @@ export default function GithubStats() {
     ? [
         {
           label: 'Contribuições (12m)',
-          value: stats.totalContributions.toLocaleString('pt-BR'),
+          value: stats.hasContributionData
+            ? stats.totalContributions.toLocaleString('pt-BR')
+            : '--',
           sub: `Desde ${stats.joinedYear} no GitHub`,
           icon: <Activity size={18} className="text-terminal-green" />,
         },
@@ -59,13 +80,15 @@ export default function GithubStats() {
         },
         {
           label: 'Dias Ativos no Ano',
-          value: stats.activeDays,
-          sub: `${Math.round((stats.activeDays / 365) * 100)}% do calendário`,
+          value: stats.hasContributionData ? stats.activeDays : '--',
+          sub: stats.hasContributionData
+            ? `${Math.round((stats.activeDays / 365) * 100)}% do calendário`
+            : 'Aguardando sincronização',
           icon: <GitCommit size={18} className="text-emerald-400" />,
         },
         {
           label: 'Maior Sequência',
-          value: `${stats.longestStreak} dias`,
+          value: stats.hasContributionData ? `${stats.longestStreak} dias` : '--',
           sub: 'Streak consecutivo',
           icon: <Flame size={18} className="text-terminal-yellow" />,
         },
@@ -94,18 +117,29 @@ export default function GithubStats() {
             </p>
           </motion.div>
 
-          <a
-            href="https://github.com/Sasagayo29"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-xs px-3.5 py-2 rounded bg-surface border border-gray-700 hover:border-terminal-green text-gray-300 hover:text-terminal-green transition-colors"
-          >
-            <span>github.com/Sasagayo29</span>
-            <ExternalLink size={13} />
-          </a>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => loadStats(true)}
+              disabled={refreshing}
+              className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded bg-surface border border-gray-700 hover:border-terminal-green text-gray-300 hover:text-terminal-green transition-colors disabled:opacity-50"
+            >
+              <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+              <span>{refreshing ? 'Sincronizando...' : 'Atualizar'}</span>
+            </button>
+
+            <a
+              href="https://github.com/Sasagayo29"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-xs px-3.5 py-2 rounded bg-surface border border-gray-700 hover:border-terminal-green text-gray-300 hover:text-terminal-green transition-colors"
+            >
+              <span>github.com/Sasagayo29</span>
+              <ExternalLink size={13} />
+            </a>
+          </div>
         </div>
 
-        {/* Loading Skeleton */}
         {loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
             {[...Array(4)].map((_, i) => (
@@ -137,43 +171,68 @@ export default function GithubStats() {
 
             {/* Linha 2: Atividade Mensal + Top Linguagens */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Gráfico de Barras Mensal */}
+              {/* Gráfico de Barras Mensal (altura em pixels para não colapsar) */}
               <div className="lg:col-span-7 bg-surface/80 backdrop-blur-sm border border-gray-800 rounded-lg p-5 sm:p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
                     <Calendar size={16} className="text-terminal-green" />
                     Contribuições por Mês (Último Ano)
                   </h3>
-                  <span className="text-[11px] text-gray-500">
-                    Pico: {maxMonthly} contrib.
-                  </span>
+                  {stats.hasContributionData && (
+                    <span className="text-[11px] text-gray-500">
+                      Pico: {maxMonthly} contrib.
+                    </span>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-12 gap-1.5 sm:gap-2.5 items-end h-44 pt-4">
-                  {stats.monthlyActivity.map((month) => {
-                    const heightPct = Math.max(Math.round((month.count / maxMonthly) * 100), 5);
-                    return (
-                      <div
-                        key={month.key}
-                        className="flex flex-col items-center h-full justify-end group"
-                      >
-                        <span className="text-[10px] text-terminal-green opacity-0 group-hover:opacity-100 transition-opacity mb-1">
-                          {month.count}
-                        </span>
-                        <div className="w-full flex-1 flex items-end">
+                {stats.monthlyActivity.length > 0 ? (
+                  <div className="grid grid-cols-12 gap-1.5 sm:gap-2.5 items-end pt-2">
+                    {stats.monthlyActivity.map((month) => {
+                      const barHeightPx =
+                        month.count > 0
+                          ? Math.max(Math.round((month.count / maxMonthly) * MAX_BAR_PX), 8)
+                          : 4;
+                      return (
+                        <div
+                          key={month.key}
+                          className="flex flex-col items-center justify-end group"
+                        >
+                          <span className="text-[10px] text-terminal-green mb-1 opacity-75 group-hover:opacity-100 transition-opacity">
+                            {month.count}
+                          </span>
                           <div
-                            title={`${month.label}: ${month.count} contribuições`}
-                            style={{ height: `${heightPct}%` }}
-                            className="w-full rounded-t bg-terminal-green/40 border-t-2 border-terminal-green group-hover:bg-terminal-green/80 transition-all"
-                          />
+                            className="w-full flex items-end justify-center"
+                            style={{ height: `${MAX_BAR_PX}px` }}
+                          >
+                            <div
+                              title={`${month.label}: ${month.count} contribuições`}
+                              style={{ height: `${barHeightPx}px` }}
+                              className={`w-full rounded-t transition-all ${
+                                month.count > 0
+                                  ? 'bg-[#2ea043]/50 border-t-2 border-[#39d353] group-hover:bg-[#39d353]/80'
+                                  : 'bg-gray-800/60'
+                              }`}
+                            />
+                          </div>
+                          <span className="text-[10px] text-gray-500 mt-2 truncate">
+                            {month.label}
+                          </span>
                         </div>
-                        <span className="text-[10px] text-gray-500 mt-2 truncate">
-                          {month.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="h-40 flex flex-col items-center justify-center text-center gap-3 text-xs text-gray-500">
+                    <p>Serviço público de contribuições indisponível no momento.</p>
+                    <button
+                      type="button"
+                      onClick={() => loadStats(true)}
+                      className="px-3 py-1.5 rounded border border-terminal-green/50 text-terminal-green hover:bg-terminal-green/10 transition-colors"
+                    >
+                      Tentar novamente
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Distribuição de Linguagens */}
@@ -184,7 +243,6 @@ export default function GithubStats() {
                     Top Linguagens (por Repositório)
                   </h3>
 
-                  {/* Barra Empilhada */}
                   <div className="h-3 w-full rounded-full overflow-hidden flex gap-0.5 mb-6 bg-gray-900">
                     {stats.topLanguages.map((lang, i) => (
                       <div
@@ -196,7 +254,6 @@ export default function GithubStats() {
                     ))}
                   </div>
 
-                  {/* Lista Detalhada */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {stats.topLanguages.map((lang, i) => (
                       <div
@@ -253,9 +310,12 @@ export default function GithubStats() {
                 </div>
               </div>
 
-              {graphMode === 'heatmap' ? (
+              {graphMode === 'heatmap' && stats.contributions.length > 0 ? (
                 <div className="overflow-x-auto pb-2">
-                  <div className="inline-grid grid-rows-7 grid-flow-col gap-1 min-w-max">
+                  <div
+                    className="inline-grid grid-flow-col gap-1 min-w-max"
+                    style={{ gridTemplateRows: 'repeat(7, minmax(0, 1fr))' }}
+                  >
                     {stats.contributions.map((day) => (
                       <div
                         key={day.date}

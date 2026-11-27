@@ -183,101 +183,192 @@ export function resolveGithubImageUrl(src, repoName, branch = 'main') {
   return `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${repoName}/${branch}/${cleanSrc}`;
 }
 
-export async function fetchGithubStats() {
-  const cacheKey = `gh_stats_v1_${GITHUB_USERNAME}`;
-  const cached = getCache(cacheKey);
-  if (cached) return cached;
+const LEVEL_MAP = {
+  NONE: 0,
+  FIRST_QUARTILE: 1,
+  SECOND_QUARTILE: 2,
+  THIRD_QUARTILE: 3,
+  FOURTH_QUARTILE: 4,
+};
 
-  const [userRes, reposRes, contribRes] = await Promise.allSettled([
-    fetch(`https://api.github.com/users/${GITHUB_USERNAME}`).then((r) =>
-      r.ok ? r.json() : Promise.reject(new Error('User API error'))
-    ),
-    fetchGithubRepos(),
-    fetch(`https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME}?y=last`).then((r) =>
-      r.ok ? r.json() : Promise.reject(new Error('Contrib API error'))
-    ),
-  ]);
+function computeLevel(count) {
+  if (!count || count <= 0) return 0;
+  if (count <= 2) return 1;
+  if (count <= 5) return 2;
+  if (count <= 9) return 3;
+  return 4;
+}
 
-  const user = userRes.status === 'fulfilled' ? userRes.value : null;
-  const repos = reposRes.status === 'fulfilled' ? reposRes.value : [];
-  const contribRaw = contribRes.status === 'fulfilled' ? contribRes.value : null;
-
-  const contributions = Array.isArray(contribRaw?.contributions) ? contribRaw.contributions : [];
-  const totalContributions =
-    contribRaw?.total?.lastYear ??
-    contributions.reduce((acc, day) => acc + (day.count || 0), 0);
-
-  // Calcula dias ativos e maior sequência (streak)
-  let activeDays = 0;
-  let longestStreak = 0;
-  let currentStreak = 0;
-
-  for (const day of contributions) {
-    if (day.count > 0) {
-      activeDays += 1;
-      currentStreak += 1;
-      if (currentStreak > longestStreak) longestStreak = currentStreak;
-    } else {
-      currentStreak = 0;
+async function fetchContributionsWithFallback() {
+  // 1ª tentativa: API primária (jogruber)
+  try {
+    const res = await fetch(
+      `https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME.toLowerCase()}?y=last`
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data?.contributions) && data.contributions.length > 0) {
+        const contributions = data.contributions.map((d) => ({
+          date: d.date,
+          count: Number(d.count) || 0,
+          level: typeof d.level === 'number' ? d.level : computeLevel(d.count),
+        }));
+        const total =
+          data?.total?.lastYear ??
+          contributions.reduce((acc, day) => acc + day.count, 0);
+        return { contributions, total };
+      }
     }
+  } catch {
+    // Segue para o fallback
   }
 
-  // Agrupa contribuições por mês (últimos 12 meses)
-  const monthMap = new Map();
-  const monthFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'short' });
+  // 2ª tentativa: API secundária (Deno)
+  try {
+    const res = await fetch(
+      `https://github-contributions-api.deno.dev/${GITHUB_USERNAME}.json`
+    );
+    if (res.ok) {
+      const data = await res.json();
+      const flat = Array.isArray(data?.contributions)
+        ? data.contributions.flat()
+        : [];
+      if (flat.length > 0) {
+        const contributions = flat
+          .filter((d) => d?.date)
+          .map((d) => {
+            const count = Number(d.contributionCount ?? d.count) || 0;
+            const mappedLevel =
+              typeof d.level === 'number'
+                ? d.level
+                : LEVEL_MAP[d.contributionLevel] ?? computeLevel(count);
+            return { date: d.date, count, level: mappedLevel };
+          })
+          .sort((a, b) => a.date.localeCompare(b.date));
 
-  for (const day of contributions) {
-    const key = day.date.slice(0, 7); // YYYY-MM
-    monthMap.set(key, (monthMap.get(key) || 0) + (day.count || 0));
-  }
-
-  const monthlyActivity = Array.from(monthMap.entries())
-    .slice(-12)
-    .map(([key, count]) => {
-      const [year, month] = key.split('-');
-      const label = monthFormatter
-        .format(new Date(Number(year), Number(month) - 1, 1))
-        .replace('.', '');
-      return { key, label: label.charAt(0).toUpperCase() + label.slice(1), count };
-    });
-
-  // Ranking de linguagens por repositório
-  const langCounts = {};
-  for (const repo of repos) {
-    if (repo.category && repo.category !== 'Outros') {
-      langCounts[repo.category] = (langCounts[repo.category] || 0) + 1;
+        const total =
+          Number(data?.totalContributions) ||
+          contributions.reduce((acc, day) => acc + day.count, 0);
+        return { contributions, total };
+      }
     }
+  } catch {
+    // Ambas indisponíveis no momento
   }
 
-  const totalCategorized = Object.values(langCounts).reduce((a, b) => a + b, 0) || 1;
-  const topLanguages = Object.entries(langCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
-    .map(([name, count]) => ({
-      name,
-      count,
-      percent: Math.round((count / totalCategorized) * 100),
-    }));
+  return { contributions: [], total: 0 };
+}
 
-  const totalStars = repos.reduce((acc, r) => acc + (r.stars || 0), 0);
-  const totalForks = repos.reduce((acc, r) => acc + (r.forks || 0), 0);
-  const joinedYear = user?.created_at ? new Date(user.created_at).getFullYear() : 2023;
+let inFlightStatsPromise = null;
 
-  const stats = {
-    username: GITHUB_USERNAME,
-    publicRepos: user?.public_repos ?? repos.length,
-    followers: user?.followers ?? 0,
-    joinedYear,
-    totalContributions,
-    activeDays,
-    longestStreak,
-    totalStars,
-    totalForks,
-    topLanguages,
-    monthlyActivity,
-    contributions,
-  };
+export async function fetchGithubStats(forceRefresh = false) {
+  const cacheKey = `gh_stats_v2_${GITHUB_USERNAME}`;
 
-  setCache(cacheKey, stats);
-  return stats;
+  if (!forceRefresh) {
+    const cached = getCache(cacheKey);
+    if (cached && cached.hasContributionData) return cached;
+  }
+
+  if (inFlightStatsPromise && !forceRefresh) {
+    return inFlightStatsPromise;
+  }
+
+  inFlightStatsPromise = (async () => {
+    const [userRes, reposRes, contribData] = await Promise.all([
+      fetch(`https://api.github.com/users/${GITHUB_USERNAME}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+      fetchGithubRepos().catch(() => []),
+      fetchContributionsWithFallback(),
+    ]);
+
+    const { contributions, total: totalContributions } = contribData;
+    const hasContributionData = contributions.length > 0;
+
+    let activeDays = 0;
+    let longestStreak = 0;
+    let currentStreak = 0;
+
+    for (const day of contributions) {
+      if (day.count > 0) {
+        activeDays += 1;
+        currentStreak += 1;
+        if (currentStreak > longestStreak) longestStreak = currentStreak;
+      } else {
+        currentStreak = 0;
+      }
+    }
+
+    const monthMap = new Map();
+    const monthFormatter = new Intl.DateTimeFormat('pt-BR', { month: 'short' });
+
+    for (const day of contributions) {
+      const key = day.date.slice(0, 7);
+      monthMap.set(key, (monthMap.get(key) || 0) + day.count);
+    }
+
+    const monthlyActivity = Array.from(monthMap.entries())
+      .slice(-12)
+      .map(([key, count]) => {
+        const [year, month] = key.split('-');
+        const label = monthFormatter
+          .format(new Date(Number(year), Number(month) - 1, 1))
+          .replace('.', '');
+        return {
+          key,
+          label: label.charAt(0).toUpperCase() + label.slice(1),
+          count,
+        };
+      });
+
+    const langCounts = {};
+    for (const repo of reposRes) {
+      if (repo.category && repo.category !== 'Outros') {
+        langCounts[repo.category] = (langCounts[repo.category] || 0) + 1;
+      }
+    }
+
+    const totalCategorized =
+      Object.values(langCounts).reduce((a, b) => a + b, 0) || 1;
+
+    const topLanguages = Object.entries(langCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percent: Math.round((count / totalCategorized) * 100),
+      }));
+
+    const stats = {
+      username: GITHUB_USERNAME,
+      hasContributionData,
+      publicRepos: userRes?.public_repos ?? reposRes.length,
+      followers: userRes?.followers ?? 0,
+      joinedYear: userRes?.created_at
+        ? new Date(userRes.created_at).getFullYear()
+        : 2023,
+      totalContributions,
+      activeDays,
+      longestStreak,
+      totalStars: reposRes.reduce((acc, r) => acc + (r.stars || 0), 0),
+      totalForks: reposRes.reduce((acc, r) => acc + (r.forks || 0), 0),
+      topLanguages,
+      monthlyActivity,
+      contributions,
+    };
+
+    // Só grava no cache se as contribuições tiverem vindo preenchidas
+    if (hasContributionData) {
+      setCache(cacheKey, stats);
+    }
+
+    return stats;
+  })();
+
+  try {
+    return await inFlightStatsPromise;
+  } finally {
+    inFlightStatsPromise = null;
+  }
 }
